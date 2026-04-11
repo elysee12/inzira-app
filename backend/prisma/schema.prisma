@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  phone      String    @unique
+  password   String
+  name       String
+  role       Role      @default(PARENT)
+  otpCode    String?
+  otpExpires DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  contents   Content[]
+}
+
+enum Role {
+  ADMIN
+  PARENT
+}
+
+model AgeCategory {
+  id          String    @id
+  label       String
+  sublabel    String
+  color       String
+  bgColor     String
+  iconName    String
+  description String
+  contents    Content[]
+}
+
+model Content {
+  id            Int         @id @default(autoincrement())
+  title         String
+  description   String      @db.Text
+  type          ContentType
+  duration      String?
+  fileUrl       String?     @db.Text
+  ageGroup      String
+  ageCategory   AgeCategory @relation(fields: [ageGroup], references: [id])
+  postedById    Int
+  postedBy      User        @relation(fields: [postedById], references: [id])
+  postedAt      DateTime    @default(now())
+  isNew         Boolean     @default(true)
+}
+
+enum ContentType {
+  text
+  audio
+  video
+}

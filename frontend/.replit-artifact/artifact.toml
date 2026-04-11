@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "Inzira - Uburezi bw'Umwana"
+version = "1.0.0"
+id = "artifacts/inzira-app"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 24114
+
+[services.development]
+run = "pnpm --filter @workspace/inzira-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/inzira-app", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/inzira-app", "run", "serve" ]
+
+[services.env]
+PORT = "24114"
+BASE_PATH = "/"
