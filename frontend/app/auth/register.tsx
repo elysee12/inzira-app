@@ -33,8 +33,10 @@ export default function RegisterScreen() {
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   const handleRegister = async () => {
+    setError("");
     if (!name.trim()) { Alert.alert("Umiryango", "Injiza izina ryawe ryuzuye."); return; }
     if (!phone.trim() || phone.trim().length < 10) { Alert.alert("Umiryango", "Injiza nimero ya telefoni yuzuye."); return; }
     if (!email.trim() || !email.includes("@")) { Alert.alert("Umiryango", "Injiza imeli yuzuye kandi igenga neza."); return; }
@@ -48,6 +50,7 @@ export default function RegisterScreen() {
     if (result.success) {
       setSuccess(true);
     } else {
+      setError(result.error ?? "Kwiyandikisha ntibyashobotse. Gerageza nanone.");
       Alert.alert("Makosa", result.error ?? "Kwiyandikisha ntibyashobotse. Gerageza nanone.");
     }
   };

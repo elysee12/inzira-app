@@ -39,8 +39,8 @@ export default function UploadScreen() {
 
   const types: { type: ContentType; icon: string; label: string }[] = [
     { type: "text", icon: "file-text", label: "Inyandiko" },
-    { type: "audio", icon: "headphones", label: "Amajwi" },
-    { type: "video", icon: "play-circle", label: "Filime" },
+    { type: "audio", icon: "headphones", label: "Audio" },
+    { type: "video", icon: "play-circle", label: "Video" },
   ];
 
   const pickDocument = async () => {

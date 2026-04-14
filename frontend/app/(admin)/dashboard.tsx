@@ -33,8 +33,8 @@ export default function AdminDashboardScreen() {
 
   const stats = [
     { icon: "file-text", label: "Inyandiko", value: textCount, color: colors.primary },
-    { icon: "headphones", label: "Amajwi", value: audioCount, color: "#8E44AD" },
-    { icon: "play-circle", label: "Filime", value: videoCount, color: ADMIN_COLOR },
+    { icon: "headphones", label: "Audio", value: audioCount, color: "#8E44AD" },
+    { icon: "play-circle", label: "Video", value: videoCount, color: ADMIN_COLOR },
     { icon: "layers", label: "Byose", value: totalContent, color: "#D35400" },
   ];
 

@@ -8,6 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AgeCategoryModule } from './age-category/age-category.module';
 import { ContentModule } from './content/content.module';
 import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuthModule } from './auth/auth.module';
     AgeCategoryModule,
     ContentModule,
     AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

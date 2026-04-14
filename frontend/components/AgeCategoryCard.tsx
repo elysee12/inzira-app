@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: "hidden",
     flexDirection: "row",
+    height: 130,
     ...Platform.select({
       ios: {
         shadowColor: "#000",

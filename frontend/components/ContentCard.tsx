@@ -18,8 +18,8 @@ const TYPE_ICONS: Record<ContentItem["type"], string> = {
 
 const TYPE_LABELS: Record<ContentItem["type"], string> = {
   text: "Inyandiko",
-  audio: "Amajwi",
-  video: "Filime",
+  audio: "Audio",
+  video: "Video",
 };
 
 const TYPE_COLORS: Record<ContentItem["type"], string> = {

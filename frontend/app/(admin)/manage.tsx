@@ -153,8 +153,8 @@ export default function ManageScreen() {
 
   const typeOptions: { type: ContentItem["type"]; icon: string; label: string }[] = [
     { type: "text", icon: "file-text", label: "Inyandiko" },
-    { type: "audio", icon: "headphones", label: "Amajwi" },
-    { type: "video", icon: "play-circle", label: "Filime" },
+    { type: "audio", icon: "headphones", label: "Audio" },
+    { type: "video", icon: "play-circle", label: "Video" },
   ];
 
   return (

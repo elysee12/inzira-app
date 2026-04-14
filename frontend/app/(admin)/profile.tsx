@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+﻿import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
@@ -17,9 +17,9 @@ import { AppHeader } from "@/components/AppHeader";
 import { useAuth } from "@/context/AuthContext";
 import { useContent } from "@/context/ContentContext";
 import { useColors } from "@/hooks/useColors";
+import apiClient from "@/context/apiClient";
 
 const ADMIN_COLOR = "#2980B9";
-const PARENTS_KEY = "inzira_parents";
 
 type ModalType =
   | null
@@ -29,6 +29,8 @@ type ModalType =
   | "settings"
   | "notifications"
   | "help";
+
+type FilterPeriod = "all" | "week" | "month" | "custom";
 
 export default function AdminProfileScreen() {
   const colors = useColors();
@@ -40,14 +42,51 @@ export default function AdminProfileScreen() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [parents, setParents] = useState<any[]>([]);
   const [notifEnabled, setNotifEnabled] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("all");
+  const [filteredParents, setFilteredParents] = useState<any[]>([]);
+  const [stats, setStats] = useState({ total: 0, byRole: { ADMIN: 0, PARENT: 0 }, byDate: 0 });
 
   useEffect(() => {
     if (activeModal === "parents") {
-      AsyncStorage.getItem(PARENTS_KEY).then((raw) => {
-        setParents(raw ? JSON.parse(raw) : []);
-      });
+      fetchParents();
     }
   }, [activeModal]);
+
+  useEffect(() => {
+    applyFilter();
+  }, [parents, filterPeriod]);
+
+  const fetchParents = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get('/users/by-role?role=PARENT');
+      setParents(response.data || []);
+      
+      // Fetch stats
+      const statsResponse = await apiClient.get('/users/stats?role=PARENT');
+      setStats(statsResponse.data || { total: 0, byRole: { ADMIN: 0, PARENT: 0 }, byDate: 0 });
+    } catch (error) {
+      // Error silently handled
+      setParents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyFilter = () => {
+    let filtered = parents;
+
+    if (filterPeriod === "week") {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      filtered = parents.filter(p => new Date(p.createdAt) >= sevenDaysAgo);
+    } else if (filterPeriod === "month") {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      filtered = parents.filter(p => new Date(p.createdAt) >= thirtyDaysAgo);
+    }
+
+    setFilteredParents(filtered);
+  };
 
   const textCount = allContent.filter((c) => c.type === "text").length;
   const audioCount = allContent.filter((c) => c.type === "audio").length;
@@ -55,7 +94,7 @@ export default function AdminProfileScreen() {
 
   const menuItems = [
     { icon: "user", label: "Umwirondoro wanjye", sublabel: userName || "Umuyobozi", modal: "profile" as ModalType },
-    { icon: "users", label: "Gengura Ababyeyi", sublabel: `${parents.length || "..."} ababyeyi`, modal: "parents" as ModalType },
+    { icon: "users", label: "Genzura Ababyeyi", sublabel: `${parents.length || "..."} ababyeyi`, modal: "parents" as ModalType },
     { icon: "bar-chart-2", label: "Raporo", sublabel: "Reba imikorere", modal: "report" as ModalType },
     { icon: "settings", label: "Igenamiterere", sublabel: "Hindura igenamiterere", modal: "settings" as ModalType },
     { icon: "bell", label: "Amatangazo", sublabel: notifEnabled ? "Byifunguye" : "Bifunzwe", modal: "notifications" as ModalType },
@@ -85,30 +124,127 @@ export default function AdminProfileScreen() {
         );
 
       case "parents":
-        return parents.length === 0 ? (
-          <View style={styles.emptyModal}>
-            <Feather name="users" size={40} color={colors.mutedForeground} />
-            <Text style={[styles.emptyModalText, { color: colors.mutedForeground }]}>
-              Nta mubyeyi wiyandikishije
-            </Text>
-          </View>
-        ) : (
+        return (
           <>
-            <View style={[styles.statPill, { backgroundColor: ADMIN_COLOR + "15" }]}>
-              <Text style={[styles.statPillNum, { color: ADMIN_COLOR }]}>{parents.length}</Text>
-              <Text style={[styles.statPillLabel, { color: ADMIN_COLOR }]}>Ababyeyi bose</Text>
-            </View>
-            {parents.map((p, i) => (
-              <View key={i} style={[styles.parentRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={[styles.parentAvatar, { backgroundColor: ADMIN_COLOR + "20" }]}>
-                  <Text style={[styles.parentAvatarText, { color: ADMIN_COLOR }]}>{p.name[0].toUpperCase()}</Text>
+            {/* Overview Section */}
+            <View style={[styles.overviewCard, { backgroundColor: ADMIN_COLOR + "10", borderColor: ADMIN_COLOR + "30" }]}>
+              <Text style={[styles.overviewTitle, { color: ADMIN_COLOR }]}>Icyiciro cy'Ababyeyi</Text>
+              <View style={styles.overviewStats}>
+                <View style={styles.statBox}>
+                  <Text style={[styles.statValue, { color: ADMIN_COLOR }]}>{stats.total}</Text>
+                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Byose</Text>
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.parentName, { color: colors.foreground }]}>{p.name}</Text>
-                  <Text style={[styles.parentMeta, { color: colors.mutedForeground }]}>{p.phone} • {p.email}</Text>
+                <View style={[styles.statBox, { borderLeftWidth: 1, borderLeftColor: ADMIN_COLOR + "30" }]}>
+                  <Text style={[styles.statValue, { color: ADMIN_COLOR }]}>{filteredParents.length}</Text>
+                  <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Igice kinini</Text>
                 </View>
               </View>
-            ))}
+            </View>
+
+            {/* Filter Buttons */}
+            <View style={styles.filterContainer}>
+              {(["all", "week", "month"] as FilterPeriod[]).map((period) => (
+                <TouchableOpacity
+                  key={period}
+                  onPress={() => setFilterPeriod(period)}
+                  style={[
+                    styles.filterBtn,
+                    filterPeriod === period
+                      ? { backgroundColor: ADMIN_COLOR }
+                      : { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.filterBtnText,
+                      filterPeriod === period
+                        ? { color: "#fff" }
+                        : { color: colors.foreground },
+                    ]}
+                  >
+                    {period === "all" ? "Byose" : period === "week" ? "Icyumweru" : "Ukwezi"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Parents List */}
+            {loading ? (
+              <View style={styles.loadingView}>
+                <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
+                  Ibireti...
+                </Text>
+              </View>
+            ) : filteredParents.length === 0 ? (
+              <View style={styles.emptyModal}>
+                <Feather name="users" size={40} color={colors.mutedForeground} />
+                <Text
+                  style={[styles.emptyModalText, { color: colors.mutedForeground }]}
+                >
+                  Nta mubyeyi wiyandikishije
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={[styles.statPill, { backgroundColor: ADMIN_COLOR + "15" }]}>
+                  <Text style={[styles.statPillNum, { color: ADMIN_COLOR }]}>
+                    {filteredParents.length}
+                  </Text>
+                  <Text style={[styles.statPillLabel, { color: ADMIN_COLOR }]}>
+                    Ababyeyi mu gice kinini
+                  </Text>
+                </View>
+                {filteredParents.map((p, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.parentRow,
+                      { backgroundColor: colors.card, borderColor: colors.border },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.parentAvatar,
+                        { backgroundColor: ADMIN_COLOR + "20" },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.parentAvatarText,
+                          { color: ADMIN_COLOR },
+                        ]}
+                      >
+                        {p.name[0].toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={[styles.parentName, { color: colors.foreground }]}
+                      >
+                        {p.name}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.parentMeta,
+                          { color: colors.mutedForeground },
+                        ]}
+                      >
+                        {p.phone} • {p.email}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.parentDate,
+                          { color: colors.mutedForeground },
+                        ]}
+                      >
+                        {new Date(p.createdAt).toLocaleDateString("rw-RW")}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </>
+            )}
           </>
         );
 
@@ -120,23 +256,61 @@ export default function AdminProfileScreen() {
             </Text>
             <View style={styles.reportGrid}>
               {[
-                { label: "Inyandiko", value: textCount, color: "#1A8A3A", icon: "file-text" },
-                { label: "Amajwi", value: audioCount, color: "#8E44AD", icon: "headphones" },
-                { label: "Filime", value: videoCount, color: ADMIN_COLOR, icon: "play-circle" },
-                { label: "Byose", value: allContent.length, color: "#D35400", icon: "layers" },
-                { label: "Ababyeyi", value: parents.length || 0, color: "#16A085", icon: "users" },
+                {
+                  label: "Inyandiko",
+                  value: textCount,
+                  color: "#1A8A3A",
+                  icon: "file-text",
+                },
+                {
+                  label: "Audio",
+                  value: audioCount,
+                  color: "#8E44AD",
+                  icon: "headphones",
+                },
+                {
+                  label: "Video",
+                  value: videoCount,
+                  color: ADMIN_COLOR,
+                  icon: "play-circle",
+                },
+                {
+                  label: "Byose",
+                  value: allContent.length,
+                  color: "#D35400",
+                  icon: "layers",
+                },
+                {
+                  label: "Ababyeyi",
+                  value: parents.length || 0,
+                  color: "#16A085",
+                  icon: "users",
+                },
               ].map((s) => (
-                <View key={s.label} style={[styles.reportCard, { backgroundColor: s.color + "15" }]}>
+                <View
+                  key={s.label}
+                  style={[styles.reportCard, { backgroundColor: s.color + "15" }]}
+                >
                   <Feather name={s.icon as any} size={22} color={s.color} />
-                  <Text style={[styles.reportNum, { color: s.color }]}>{s.value}</Text>
-                  <Text style={[styles.reportLabel, { color: s.color }]}>{s.label}</Text>
+                  <Text style={[styles.reportNum, { color: s.color }]}>
+                    {s.value}
+                  </Text>
+                  <Text style={[styles.reportLabel, { color: s.color }]}>
+                    {s.label}
+                  </Text>
                 </View>
               ))}
             </View>
-            <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+            <View
+              style={[
+                styles.infoBox,
+                { backgroundColor: colors.secondary, borderColor: colors.border },
+              ]}
+            >
               <Feather name="info" size={14} color={colors.primary} />
               <Text style={[styles.infoBoxText, { color: colors.primary }]}>
-                Raporo yuzuye izatangwa mu verisiyo ikurikiraho. Ubu reba imibare y'ibanze.
+                Raporo yuzuye izatangwa mu verisiyo ikurikiraho. Ubu reba
+                imibare y'ibanze.
               </Text>
             </View>
           </>
@@ -145,17 +319,35 @@ export default function AdminProfileScreen() {
       case "settings":
         return (
           <>
-            <SettingToggle label="Ijambo rya sisitemu" value={true} colors={colors} accentColor={ADMIN_COLOR} />
-            <SettingToggle label="Imiterere y'ijoro" value={false} colors={colors} accentColor={ADMIN_COLOR} />
+            <SettingToggle
+              label="Ijambo rya sisitemu"
+              value={true}
+              colors={colors}
+              accentColor={ADMIN_COLOR}
+            />
+            <SettingToggle
+              label="Imiterere y'ijoro"
+              value={false}
+              colors={colors}
+              accentColor={ADMIN_COLOR}
+            />
             <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.settingLabel, { color: colors.foreground }]}>Ururimi</Text>
+              <Text style={[styles.settingLabel, { color: colors.foreground }]}>
+                Ururimi
+              </Text>
               <View style={[styles.langPill, { backgroundColor: ADMIN_COLOR + "20" }]}>
-                <Text style={[styles.langPillText, { color: ADMIN_COLOR }]}>Ikinyarwanda</Text>
+                <Text style={[styles.langPillText, { color: ADMIN_COLOR }]}>
+                  Ikinyarwanda
+                </Text>
               </View>
             </View>
             <View style={[styles.settingRow, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.settingLabel, { color: colors.foreground }]}>Verisiyo ya App</Text>
-              <Text style={[styles.settingValue, { color: colors.mutedForeground }]}>1.0.0</Text>
+              <Text style={[styles.settingLabel, { color: colors.foreground }]}>
+                Verisiyo ya App
+              </Text>
+              <Text style={[styles.settingValue, { color: colors.mutedForeground }]}>
+                1.0.0
+              </Text>
             </View>
           </>
         );
@@ -170,12 +362,32 @@ export default function AdminProfileScreen() {
               colors={colors}
               accentColor={ADMIN_COLOR}
             />
-            <SettingToggle label="Amatangazo y'ababyeyi bashya" value={true} colors={colors} accentColor={ADMIN_COLOR} />
-            <SettingToggle label="Amatangazo y'ibyuma" value={false} colors={colors} accentColor={ADMIN_COLOR} />
-            <View style={[styles.infoBox, { backgroundColor: colors.secondary, borderColor: colors.border, marginTop: 8 }]}>
+            <SettingToggle
+              label="Amatangazo y'ababyeyi bashya"
+              value={true}
+              colors={colors}
+              accentColor={ADMIN_COLOR}
+            />
+            <SettingToggle
+              label="Amatangazo y'ibyuma"
+              value={false}
+              colors={colors}
+              accentColor={ADMIN_COLOR}
+            />
+            <View
+              style={[
+                styles.infoBox,
+                {
+                  backgroundColor: colors.secondary,
+                  borderColor: colors.border,
+                  marginTop: 8,
+                },
+              ]}
+            >
               <Feather name="bell" size={14} color={colors.primary} />
               <Text style={[styles.infoBoxText, { color: colors.primary }]}>
-                Ohereza amatangazo ababyeyi byihuse binyuze mu koranabuhanga kuri ubu.
+                Ohereza amatangazo ababyeyi byihuse binyuze mu koranabuhanga
+                kuri ubu.
               </Text>
             </View>
           </>
@@ -184,14 +396,38 @@ export default function AdminProfileScreen() {
       case "help":
         return (
           <>
-            <FaqItem q="Nshobora ute gutunga ikibazo?" a="Twandikire kuri support@inzira.rw cyangwa uturuhe ubutumwa." colors={colors} />
-            <FaqItem q="Nshobora ute kongeraho umuyobozi mushya?" a="Abayobozi bashya bashyirwaho n'ubuyobozi bw'ikigo gusa." colors={colors} />
-            <FaqItem q="Amasomo ashyirwa ryari?" a="Amasomo yashyirwa iyo umuyobozi ashyize inyigisho nshya. Ababyeyi babona vuba." colors={colors} />
-            <View style={[styles.contactBox, { backgroundColor: ADMIN_COLOR + "10", borderColor: ADMIN_COLOR + "30" }]}>
+            <FaqItem
+              q="Nshobora ute gutunga ikibazo?"
+              a="Twandikire kuri support@inzira.rw cyangwa uturuhe ubutumwa."
+              colors={colors}
+            />
+            <FaqItem
+              q="Nshobora ute kongeraho umuyobozi mushya?"
+              a="Abayobozi bashya bashyirwaho n'ubuyobozi bw'ikigo gusa."
+              colors={colors}
+            />
+            <FaqItem
+              q="Amasomo ashyirwa ryari?"
+              a="Amasomo yashyirwa iyo umuyobozi ashyize inyigisho nshya. Ababyeyi babona vuba."
+              colors={colors}
+            />
+            <View
+              style={[
+                styles.contactBox,
+                {
+                  backgroundColor: ADMIN_COLOR + "10",
+                  borderColor: ADMIN_COLOR + "30",
+                },
+              ]}
+            >
               <Feather name="mail" size={18} color={ADMIN_COLOR} />
               <View>
-                <Text style={[styles.contactLabel, { color: ADMIN_COLOR }]}>Imeli y'ubufasha</Text>
-                <Text style={[styles.contactValue, { color: colors.foreground }]}>support@inzira.rw</Text>
+                <Text style={[styles.contactLabel, { color: ADMIN_COLOR }]}>
+                  Imeli y'ubufasha
+                </Text>
+                <Text style={[styles.contactValue, { color: colors.foreground }]}>
+                  support@inzira.rw
+                </Text>
               </View>
             </View>
           </>
@@ -204,7 +440,7 @@ export default function AdminProfileScreen() {
 
   const modalTitles: Record<NonNullable<ModalType>, string> = {
     profile: "Umwirondoro wanjye",
-    parents: "Gengura Ababyeyi",
+    parents: "Genzura Ababyeyi",
     report: "Raporo",
     settings: "Igenamiterere",
     notifications: "Amatangazo",
@@ -219,12 +455,21 @@ export default function AdminProfileScreen() {
         contentContainerStyle={[styles.content, { paddingBottom: bottomPad + 80 }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.profileCard, { backgroundColor: ADMIN_COLOR + "15", borderColor: ADMIN_COLOR + "30" }]}>
+        <View
+          style={[
+            styles.profileCard,
+            { backgroundColor: ADMIN_COLOR + "15", borderColor: ADMIN_COLOR + "30" },
+          ]}
+        >
           <View style={[styles.avatar, { backgroundColor: ADMIN_COLOR }]}>
-            <Text style={styles.avatarText}>{userName ? userName[0].toUpperCase() : "A"}</Text>
+            <Text style={styles.avatarText}>
+              {userName ? userName[0].toUpperCase() : "A"}
+            </Text>
           </View>
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: colors.foreground }]}>{userName || "Umuyobozi"}</Text>
+            <Text style={[styles.profileName, { color: colors.foreground }]}>
+              {userName || "Umuyobozi"}
+            </Text>
             <View style={[styles.roleBadge, { backgroundColor: ADMIN_COLOR }]}>
               <Feather name="shield" size={11} color="#fff" />
               <Text style={styles.roleLabel}>Umuyobozi</Text>
@@ -232,7 +477,12 @@ export default function AdminProfileScreen() {
           </View>
         </View>
 
-        <View style={[styles.menuCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View
+          style={[
+            styles.menuCard,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
           {menuItems.map((item, index) => (
             <React.Fragment key={item.icon}>
               <TouchableOpacity
@@ -244,10 +494,18 @@ export default function AdminProfileScreen() {
                   <Feather name={item.icon as any} size={18} color={ADMIN_COLOR} />
                 </View>
                 <View style={styles.menuText}>
-                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>{item.label}</Text>
-                  <Text style={[styles.menuSub, { color: colors.mutedForeground }]}>{item.sublabel}</Text>
+                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>
+                    {item.label}
+                  </Text>
+                  <Text style={[styles.menuSub, { color: colors.mutedForeground }]}>
+                    {item.sublabel}
+                  </Text>
                 </View>
-                <Feather name="chevron-right" size={16} color={colors.mutedForeground} />
+                <Feather
+                  name="chevron-right"
+                  size={16}
+                  color={colors.mutedForeground}
+                />
               </TouchableOpacity>
               {index < menuItems.length - 1 && (
                 <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -270,7 +528,12 @@ export default function AdminProfileScreen() {
         </Text>
       </ScrollView>
 
-      <Modal visible={activeModal !== null} animationType="slide" transparent onRequestClose={() => setActiveModal(null)}>
+      <Modal
+        visible={activeModal !== null}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setActiveModal(null)}
+      >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalSheet, { backgroundColor: colors.background }]}>
             <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
@@ -281,7 +544,10 @@ export default function AdminProfileScreen() {
                 <Feather name="x" size={22} color={colors.mutedForeground} />
               </TouchableOpacity>
             </View>
-            <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              contentContainerStyle={styles.modalContent}
+              showsVerticalScrollIndicator={false}
+            >
               {renderModalContent()}
             </ScrollView>
           </View>
@@ -296,8 +562,12 @@ function InfoRow({ icon, label, value, colors }: any) {
     <View style={[infoStyles.row, { borderBottomColor: colors.border }]}>
       <Feather name={icon} size={16} color={colors.primary} />
       <View style={{ flex: 1 }}>
-        <Text style={[infoStyles.label, { color: colors.mutedForeground }]}>{label}</Text>
-        <Text style={[infoStyles.value, { color: colors.foreground }]}>{value}</Text>
+        <Text style={[infoStyles.label, { color: colors.mutedForeground }]}>
+          {label}
+        </Text>
+        <Text style={[infoStyles.value, { color: colors.foreground }]}>
+          {value}
+        </Text>
       </View>
     </View>
   );
@@ -306,7 +576,9 @@ function InfoRow({ icon, label, value, colors }: any) {
 function SettingToggle({ label, value, onChange, colors, accentColor }: any) {
   return (
     <View style={[settingStyles.row, { borderBottomColor: colors.border }]}>
-      <Text style={[settingStyles.label, { color: colors.foreground }]}>{label}</Text>
+      <Text style={[settingStyles.label, { color: colors.foreground }]}>
+        {label}
+      </Text>
       <Switch
         value={value}
         onValueChange={onChange}
@@ -327,21 +599,41 @@ function FaqItem({ q, a, colors }: any) {
     >
       <View style={faqStyles.qRow}>
         <Text style={[faqStyles.q, { color: colors.foreground }]}>{q}</Text>
-        <Feather name={open ? "chevron-up" : "chevron-down"} size={16} color={colors.mutedForeground} />
+        <Feather
+          name={open ? "chevron-up" : "chevron-down"}
+          size={16}
+          color={colors.mutedForeground}
+        />
       </View>
-      {open && <Text style={[faqStyles.a, { color: colors.mutedForeground }]}>{a}</Text>}
+      {open && (
+        <Text style={[faqStyles.a, { color: colors.mutedForeground }]}>
+          {a}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 }
 
 const infoStyles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "flex-start", gap: 12, paddingVertical: 12, borderBottomWidth: 1 },
+  row: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
   label: { fontSize: 11, fontFamily: "Inter_400Regular" },
   value: { fontSize: 15, fontFamily: "Inter_600SemiBold", marginTop: 2 },
 });
 
 const settingStyles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 14, borderBottomWidth: 1 },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
   label: { fontSize: 15, fontFamily: "Inter_500Medium", flex: 1 },
 });
 
@@ -355,12 +647,33 @@ const faqStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, gap: 16 },
-  profileCard: { flexDirection: "row", alignItems: "center", padding: 20, borderRadius: 16, borderWidth: 1, gap: 16 },
-  avatar: { width: 64, height: 64, borderRadius: 32, alignItems: "center", justifyContent: "center" },
+  profileCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 16,
+  },
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   avatarText: { fontSize: 28, fontFamily: "Inter_700Bold", color: "#fff" },
   profileInfo: { gap: 6 },
   profileName: { fontSize: 20, fontFamily: "Inter_700Bold" },
-  roleBadge: { flexDirection: "row", alignItems: "center", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, gap: 4, alignSelf: "flex-start" },
+  roleBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    gap: 4,
+    alignSelf: "flex-start",
+  },
   roleLabel: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#fff" },
   menuCard: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },
   menuItem: { flexDirection: "row", alignItems: "center", padding: 16, gap: 12 },
@@ -369,50 +682,175 @@ const styles = StyleSheet.create({
   menuLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
   menuSub: { fontSize: 12, fontFamily: "Inter_400Regular" },
   divider: { height: 1, marginHorizontal: 16 },
-  logoutBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 14, borderRadius: 14, gap: 8 },
+  logoutBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 14,
+    gap: 8,
+  },
   logoutText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#ef4444" },
   version: { fontSize: 11, fontFamily: "Inter_400Regular", textAlign: "center" },
   // Modal
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
   modalSheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "85%" },
-  modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 20, borderBottomWidth: 1 },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 20,
+    borderBottomWidth: 1,
+  },
   modalTitle: { fontSize: 18, fontFamily: "Inter_700Bold" },
   modalContent: { padding: 20, gap: 12, paddingBottom: 40 },
   // Info card
-  infoCard: { alignItems: "center", padding: 24, borderRadius: 16, gap: 10, marginBottom: 8 },
-  bigAvatar: { width: 80, height: 80, borderRadius: 40, alignItems: "center", justifyContent: "center" },
-  bigAvatarText: { fontSize: 32, fontFamily: "Inter_700Bold", color: "#fff" },
+  infoCard: {
+    alignItems: "center",
+    padding: 24,
+    borderRadius: 16,
+    gap: 10,
+    marginBottom: 8,
+  },
+  bigAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bigAvatarText: {
+    fontSize: 32,
+    fontFamily: "Inter_700Bold",
+    color: "#fff",
+  },
   infoName: { fontSize: 20, fontFamily: "Inter_700Bold" },
-  rolePill: { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, gap: 4 },
-  rolePillText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#fff" },
+  rolePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+    gap: 4,
+  },
+  rolePillText: {
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    color: "#fff",
+  },
   // Parents
-  statPill: { alignItems: "center", padding: 16, borderRadius: 14, marginBottom: 8 },
+  statPill: {
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 8,
+  },
   statPillNum: { fontSize: 36, fontFamily: "Inter_700Bold" },
   statPillLabel: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  parentRow: { flexDirection: "row", alignItems: "center", gap: 12, padding: 12, borderRadius: 12, borderWidth: 1 },
-  parentAvatar: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  parentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  parentAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   parentAvatarText: { fontSize: 18, fontFamily: "Inter_700Bold" },
   parentName: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
   parentMeta: { fontSize: 11, fontFamily: "Inter_400Regular" },
+  parentDate: { fontSize: 10, fontFamily: "Inter_400Regular", marginTop: 2 },
   // Report
   reportSub: { fontSize: 13, fontFamily: "Inter_400Regular", marginBottom: 4 },
   reportGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  reportCard: { width: "47%", padding: 16, borderRadius: 14, alignItems: "center", gap: 6 },
+  reportCard: {
+    width: "47%",
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    gap: 6,
+  },
   reportNum: { fontSize: 28, fontFamily: "Inter_700Bold" },
   reportLabel: { fontSize: 12, fontFamily: "Inter_500Medium" },
   // Settings
-  settingRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 14, borderBottomWidth: 1 },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
   settingLabel: { fontSize: 15, fontFamily: "Inter_500Medium" },
   settingValue: { fontSize: 14, fontFamily: "Inter_400Regular" },
   langPill: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
   langPillText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
   // Info / help
-  infoBox: { flexDirection: "row", gap: 8, padding: 12, borderRadius: 10, borderWidth: 1 },
-  infoBoxText: { flex: 1, fontSize: 12, fontFamily: "Inter_400Regular", lineHeight: 18 },
-  contactBox: { flexDirection: "row", gap: 12, padding: 16, borderRadius: 14, borderWidth: 1, alignItems: "center" },
+  infoBox: {
+    flexDirection: "row",
+    gap: 8,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  infoBoxText: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 18,
+  },
+  contactBox: {
+    flexDirection: "row",
+    gap: 12,
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: "center",
+  },
   contactLabel: { fontSize: 12, fontFamily: "Inter_500Medium" },
   contactValue: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
   // Empty
   emptyModal: { alignItems: "center", paddingVertical: 40, gap: 12 },
-  emptyModalText: { fontSize: 15, fontFamily: "Inter_500Medium", textAlign: "center" },
+  emptyModalText: {
+    fontSize: 15,
+    fontFamily: "Inter_500Medium",
+    textAlign: "center",
+  },
+  // Overview & Filter
+  overviewCard: {
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  overviewTitle: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    marginBottom: 12,
+  },
+  overviewStats: { flexDirection: "row", gap: 16 },
+  statBox: { flex: 1, alignItems: "center", paddingVertical: 8 },
+  statValue: { fontSize: 28, fontFamily: "Inter_700Bold" },
+  statLabel: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 4 },
+  filterContainer: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 16,
+  },
+  filterBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  filterBtnText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  loadingView: { alignItems: "center", paddingVertical: 32 },
+  loadingText: { fontSize: 14, fontFamily: "Inter_400Regular" },
 });

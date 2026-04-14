@@ -32,8 +32,8 @@ const TYPE_ICONS: Record<string, string> = {
 
 const TYPE_LABELS: Record<string, string> = {
   text: "Inyandiko",
-  audio: "Amajwi",
-  video: "Filime",
+  audio: "Audio",
+  video: "Video",
 };
 
 const TYPE_COLORS: Record<string, string> = {
@@ -223,9 +223,9 @@ export default function ContentDetailScreen() {
                   ? "Irimo gukonjesha..."
                   : isPlaying
                   ? item.type === "audio"
-                    ? "Amajwi arimo gutubirizwa..."
-                    : "Filime irimo kugaragazwa..."
-                  : `Kanda kugira ngo ${item.type === "audio" ? "utege amajwi" : "urebe filime"}`}
+                    ? "Audio irimo gutubirizwa..."
+                    : "Video irimo kugaragazwa..."
+                  : `Kanda kugira ngo ${item.type === "audio" ? "utege audio" : "urebe video"}`}
               </Text>
               {duration > 0 && (
                 <View style={styles.progressBar}>
@@ -254,7 +254,7 @@ export default function ContentDetailScreen() {
               source={{ uri: rawFileUrl }}
               useNativeControls
               resizeMode="contain"
-              onError={() => Alert.alert("Makosa", "Filime ntishobora kurangizwa")}
+              onError={() => Alert.alert("Makosa", "Video ntishobora kurangizwa")}
             />
           </View>
         )}
