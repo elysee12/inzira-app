@@ -21,4 +21,11 @@ export class AgeCategoryService {
       data,
     });
   }
+
+  async update(id: string, data: any): Promise<AgeCategory> {
+    return this.prisma.ageCategory.update({
+      where: { id },
+      data,
+    });
+  }
 }

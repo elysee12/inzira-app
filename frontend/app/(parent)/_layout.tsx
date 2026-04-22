@@ -15,6 +15,7 @@ export default function ParentLayout() {
   const isWeb = Platform.OS === "web";
 
   return (
+    
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.primary,

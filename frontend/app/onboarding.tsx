@@ -28,23 +28,23 @@ const SLIDES: Slide[] = [
   {
     id: "1",
     image: require("../assets/images/age_0_6.png"),
-    title: "Murakaza neza kuri Inzira",
+    title: "Murakaza neza kuri Imirire",
     subtitle:
-      "Iyi porogaramu ifasha ababyeyi kumenya imirire myiza kuri abana babo kuva ku kuvuka kugeza ku myaka 5.",
+      "Iyi porogaramu ifasha ababyeyi kumenya imirire myiza ku bana babo kuva ku kuvuka kugeza ku myaka 5.",
   },
   {
     id: "2",
     image: require("../assets/images/age_13_24.png"),
-    title: "Inyigisho z'imirire zogezwa kuri ubundi",
+    title: "Inyigisho z'imirire zigezweho",
     subtitle:
-      "Abaganga n'inzobere mu buzima bw'umwana baratwinjiramo inyigisho z'imirire zerekeye urugendo rw'umwana wawe.",
+      "Abaganga n'inzobere mu buzima bw'umwana badusangiza inyigisho z'imirire zerekeye urugendo rw'umwana wawe.",
   },
   {
     id: "3",
     image: require("../assets/images/age_25_59.png"),
     title: "Umwana wawe akura neza",
     subtitle:
-      "Gukurikirana imikurire y'umwana wawe no kumufasha gutera imbere mu buryo bwiza binyuze ku inyigisho zihuje n'imyaka ye.",
+      "Gukurikirana imikurire y'umwana wawe no kumufasha gutera imbere mu buryo bwiza binyuze mu nyigisho zihuje n'imyaka ye.",
   },
 ];
 
@@ -71,7 +71,7 @@ export default function OnboardingScreen() {
         <View style={[styles.logo, { backgroundColor: colors.primary }]}>
           <Feather name="heart" size={18} color="#fff" />
         </View>
-        <Text style={[styles.appName, { color: colors.primary }]}>Inzira</Text>
+        <Text style={[styles.appName, { color: colors.primary }]}>Imirire</Text>
         <TouchableOpacity style={styles.skipBtn} onPress={() => router.replace("/auth/login")}>
           <Text style={[styles.skipText, { color: colors.mutedForeground }]}>Reka</Text>
         </TouchableOpacity>

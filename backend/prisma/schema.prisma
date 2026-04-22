@@ -33,7 +33,8 @@ model AgeCategory {
   color       String
   bgColor     String
   iconName    String
-  description String
+  description String    @db.Text
+  imageUrl    String?   @db.Text
   contents    Content[]
 }
 

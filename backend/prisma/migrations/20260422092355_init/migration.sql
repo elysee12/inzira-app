@@ -6,6 +6,8 @@ CREATE TABLE `User` (
     `password` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `role` ENUM('ADMIN', 'PARENT') NOT NULL DEFAULT 'PARENT',
+    `otpCode` VARCHAR(191) NULL,
+    `otpExpires` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -22,7 +24,8 @@ CREATE TABLE `AgeCategory` (
     `color` VARCHAR(191) NOT NULL,
     `bgColor` VARCHAR(191) NOT NULL,
     `iconName` VARCHAR(191) NOT NULL,
-    `description` VARCHAR(191) NOT NULL,
+    `description` TEXT NOT NULL,
+    `imageUrl` TEXT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -34,6 +37,7 @@ CREATE TABLE `Content` (
     `description` TEXT NOT NULL,
     `type` ENUM('text', 'audio', 'video') NOT NULL,
     `duration` VARCHAR(191) NULL,
+    `fileUrl` TEXT NULL,
     `ageGroup` VARCHAR(191) NOT NULL,
     `postedById` INTEGER NOT NULL,
     `postedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),

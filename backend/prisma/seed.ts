@@ -7,7 +7,7 @@ async function main() {
   console.log('Seeding database...');
 
   // 1. Create Admin User
-  const adminEmail = 'admin@inzira.rw';
+  const adminEmail = 'admin@imirire.rw';
   const adminPhone = '0780000000';
   const hashedPassword = await bcrypt.hash('Admin@123', 10);
 
@@ -18,7 +18,7 @@ async function main() {
       email: adminEmail,
       phone: adminPhone,
       password: hashedPassword,
-      name: 'Inzira Admin',
+      name: 'Imirire Admin',
       role: Role.ADMIN,
     },
   });
@@ -34,7 +34,7 @@ async function main() {
       color: '#1A8A3A',
       bgColor: '#E8F5EC',
       iconName: 'child',
-      description: "Inzira z'imirire yo konka no gukurikirana imbaga y'umwana",
+      description: "Imirire y'umwana yo konka no gukurikirana imikurire y'umwana",
     },
     {
       id: '7-12',
@@ -43,7 +43,7 @@ async function main() {
       color: '#2980B9',
       bgColor: '#EBF5FB',
       iconName: 'child',
-      description: 'Guteranya amata yo konka n\'ibiryo bya mbere kuri umwana',
+      description: 'Guteranya amata yo konka n\'ibiryo bya mbere ku mwana',
     },
     {
       id: '13-24',
@@ -52,7 +52,7 @@ async function main() {
       color: '#8E44AD',
       bgColor: '#F4ECF7',
       iconName: 'child',
-      description: 'Imirire myiza yuzuye kuri umwana uri gutera imbere',
+      description: 'Imirire myiza yuzuye ku mwana uri gutera imbere',
     },
     {
       id: '25-59',
@@ -61,7 +61,7 @@ async function main() {
       color: '#D35400',
       bgColor: '#FDEBD0',
       iconName: 'child',
-      description: 'Imirire myiza kuri umwana ukuze ku mwaka 2 kugeza 5',
+      description: 'Imirire myiza ku mwana ukuze ku mwaka 2 kugeza 5',
     },
   ];
 

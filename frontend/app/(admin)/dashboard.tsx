@@ -22,7 +22,7 @@ export default function AdminDashboardScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { userName, logout } = useAuth();
-  const { allContent, getByAge } = useContent();
+  const { allContent, ageCategories, getByAge } = useContent();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
@@ -30,6 +30,8 @@ export default function AdminDashboardScreen() {
   const audioCount = allContent.filter((c) => c.type === "audio").length;
   const videoCount = allContent.filter((c) => c.type === "video").length;
   const totalContent = allContent.length;
+
+  const displayCategories = ageCategories.length > 0 ? ageCategories : AGE_CATEGORIES;
 
   const stats = [
     { icon: "file-text", label: "Inyandiko", value: textCount, color: colors.primary },
@@ -50,7 +52,7 @@ export default function AdminDashboardScreen() {
         <View style={styles.headerRow}>
           <View style={styles.headerLeft}>
             <Text style={styles.greeting}>Muraho, {userName || "Umuyobozi"}</Text>
-            <Text style={styles.headerSub}>Ikibaho cy'imicungire</Text>
+            <Text style={styles.headerSub}>Imicungire ya System</Text>
           </View>
           <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
             <Feather name="log-out" size={18} color="rgba(255,255,255,0.8)" />
@@ -72,11 +74,14 @@ export default function AdminDashboardScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-              Itsinda ry'imyaka
+              Ikiciro cy'umwana
             </Text>
+            <TouchableOpacity onPress={() => router.push("/(admin)/manage-categories")}>
+              <Text style={[styles.seeAll, { color: ADMIN_COLOR }]}>Genzura</Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.ageGrid}>
-            {AGE_CATEGORIES.map((cat) => (
+            {displayCategories.map((cat) => (
               <TouchableOpacity
                 key={cat.id}
                 style={[styles.ageCard, { backgroundColor: cat.bgColor }]}
@@ -101,7 +106,7 @@ export default function AdminDashboardScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-              Inyigisho za vuba
+              Inyigisho ziheruka
             </Text>
             <TouchableOpacity onPress={() => router.push("/(admin)/manage")}>
               <Text style={[styles.seeAll, { color: ADMIN_COLOR }]}>Reba byose</Text>
@@ -109,9 +114,14 @@ export default function AdminDashboardScreen() {
           </View>
 
           {recentContent.map((item) => (
-            <View
+            <TouchableOpacity
               key={item.id}
               style={[styles.recentItem, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => router.push({
+                pathname: "/(admin)/content-viewer/[id]",
+                params: { id: item.id },
+              })}
+              activeOpacity={0.7}
             >
               <View
                 style={[
@@ -155,7 +165,7 @@ export default function AdminDashboardScreen() {
               {item.isNew && (
                 <View style={[styles.newDot, { backgroundColor: colors.primary }]} />
               )}
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
 

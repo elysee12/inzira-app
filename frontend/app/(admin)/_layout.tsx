@@ -45,7 +45,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: "Ikibaho",
+          title: "System",
           tabBarIcon: ({ color }) => <Feather name="grid" size={22} color={color} />,
         }}
       />
@@ -59,7 +59,7 @@ export default function AdminLayout() {
       <Tabs.Screen
         name="manage"
         options={{
-          title: "Gengura",
+          title: "Genzura",
           tabBarIcon: ({ color }) => <Feather name="list" size={22} color={color} />,
         }}
       />
@@ -71,7 +71,18 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="manage-categories"
+        options={{
+          title: "Ikiciro",
+          tabBarIcon: ({ color }) => <Feather name="settings" size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="age-content/[id]"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="content-viewer/[id]"
         options={{ href: null }}
       />
     </Tabs>

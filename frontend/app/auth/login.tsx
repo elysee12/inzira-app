@@ -31,7 +31,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!identifier.trim() || !password.trim()) {
-      Alert.alert("Umiryango", "Uzuza imeli cyangwa nimero ya telefoni n'ijambo ry'ibanga.");
+      Alert.alert("Ikitonderwa", "Uzuza imeli cyangwa nimero ya telefoni n'ijambo ry'ibanga.");
       return;
     }
     
@@ -46,7 +46,7 @@ export default function LoginScreen() {
         router.replace("/(parent)/home");
       }
     } else {
-      Alert.alert("Makosa", result.error ?? "Injira ntibyashobotse. Gerageza nanone.");
+      Alert.alert("Ikibazo", result.error ?? "Injira ntibyashobotse. Gerageza nanone.");
     }
   };
 
@@ -58,7 +58,7 @@ export default function LoginScreen() {
             <Feather name="heart" size={30} color="#fff" />
           </View>
         </View>
-        <Text style={styles.appTitle}>Inzira</Text>
+        <Text style={styles.appTitle}>Imirire</Text>
         <Text style={styles.appSubtitle}>Uburezi bw'Umwana</Text>
         <View style={styles.waveBottom} />
       </View>
@@ -83,7 +83,7 @@ export default function LoginScreen() {
               <Feather name="user" size={16} color={colors.mutedForeground} />
               <TextInput
                 style={[styles.input, { color: colors.foreground }]}
-                placeholder="urugero@inzira.rw cyangwa 07X XXX XXXX"
+                placeholder="urugero@imirire.rw cyangwa 07X XXX XXXX"
                 placeholderTextColor={colors.mutedForeground}
                 value={identifier}
                 onChangeText={setIdentifier}
@@ -156,7 +156,7 @@ export default function LoginScreen() {
           <View style={[styles.adminHint, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
             <Feather name="info" size={13} color={colors.mutedForeground} />
             <Text style={[styles.adminHintText, { color: colors.mutedForeground }]}>
-              Abayobozi bakoresheje nomero n'ijambo ry'ibanga byabahereywe. Injira neza kugira ngo ugere ku ikibaho cy'umuyobozi.
+              Abayobozi bakoresheje nomero n'ijambo ry'ibanga byabahereywe. Injira neza kugira ngo ugere ku imicungire y'umuyobozi.
             </Text>
           </View>
         </ScrollView>

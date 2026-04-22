@@ -1,4 +1,7 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { AgeCategoryService } from './age-category.service';
 import { AgeCategory } from '@prisma/client';
 
@@ -17,7 +20,42 @@ export class AgeCategoryController {
   }
 
   @Post()
-  async create(@Body() data: any): Promise<AgeCategory> {
-    return this.ageCategoryService.create(data);
+  @UseInterceptors(FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads/categories',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `category-${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async create(@Body() data: any, @UploadedFile() file?: Express.Multer.File): Promise<AgeCategory> {
+    const categoryData = {
+      ...data,
+      imageUrl: file ? `/uploads/categories/${file.filename}` : data.imageUrl,
+    };
+    return this.ageCategoryService.create(categoryData);
+  }
+
+  @Patch(':id')
+  @UseInterceptors(FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads/categories',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `category-${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async update(
+    @Param('id') id: string,
+    @Body() data: any,
+    @UploadedFile() file?: Express.Multer.File,
+  ): Promise<AgeCategory> {
+    const updates: any = { ...data };
+    if (file) {
+      updates.imageUrl = `/uploads/categories/${file.filename}`;
+    }
+    return this.ageCategoryService.update(id, updates);
   }
 }

@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import * as DocumentPicker from "expo-document-picker";
 import {
@@ -54,7 +55,10 @@ export default function ManageScreen() {
 
   const filters = [
     { id: ALL_FILTER, label: "Byose" },
-    ...AGE_CATEGORIES.map((c) => ({ id: c.id, label: `${c.label}m` })),
+    ...AGE_CATEGORIES.map((c) => ({
+      id: c.id,
+      label: (c as any).sublabel ? `${c.label} ${(c as any).sublabel}` : c.label,
+    })),
   ];
 
   const filtered =
@@ -159,7 +163,7 @@ export default function ManageScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <AppHeader title="Gengura Amasomo" backgroundColor={ADMIN_COLOR} />
+      <AppHeader title="Genzura Amasomo" backgroundColor={ADMIN_COLOR} />
 
       <View style={styles.filterRow}>
         {filters.map((f) => (
@@ -198,32 +202,25 @@ export default function ManageScreen() {
               <Feather name={TYPE_ICONS[item.type] as any} size={18} color={TYPE_COLORS[item.type]} />
             </View>
             <View style={styles.rowText}>
-              <View style={styles.rowTitleRow}>
-                <Text style={[styles.rowTitle, { color: colors.foreground }]} numberOfLines={1}>
-                  {item.title}
-                </Text>
-                {item.isNew && (
-                  <View style={[styles.newBadge, { backgroundColor: colors.primary + "20" }]}>
-                    <Text style={[styles.newBadgeText, { color: colors.primary }]}>Bishya</Text>
-                  </View>
-                )}
-              </View>
+              <Text style={[styles.rowTitle, { color: colors.foreground }]} numberOfLines={1}>
+                {item.title}
+              </Text>
               <Text style={[styles.rowMeta, { color: colors.mutedForeground }]}>
-                {item.ageGroup} amezi • {typeof item.postedBy === 'object' ? (item.postedBy as any).name : item.postedBy}
+                {item.ageGroup} amezi • {typeof item.postedBy === 'object' ? item.postedBy.name : item.postedBy}
               </Text>
             </View>
             <View style={styles.rowActions}>
-              <TouchableOpacity
-                style={[styles.actionBtn, { backgroundColor: isStatic(item.id) ? colors.secondary : "#EBF5FB" }]}
-                onPress={() => openEdit(item)}
-              >
-                <Feather name="edit-2" size={14} color={isStatic(item.id) ? colors.mutedForeground : ADMIN_COLOR} />
+              <TouchableOpacity onPress={() => router.push({
+                pathname: "/(admin)/content-viewer/[id]",
+                params: { id: item.id },
+              })} style={styles.actionButton}>
+                <Feather name="eye" size={18} color={ADMIN_COLOR} />
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionBtn, { backgroundColor: isStatic(item.id) ? colors.secondary : "#FEE2E2" }]}
-                onPress={() => handleDelete(item)}
-              >
-                <Feather name="trash-2" size={14} color={isStatic(item.id) ? colors.mutedForeground : "#ef4444"} />
+              <TouchableOpacity onPress={() => openEdit(item)} style={styles.actionButton}>
+                <Feather name="edit-2" size={18} color={ADMIN_COLOR} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleDelete(item)} style={styles.actionButton}>
+                <Feather name="trash-2" size={18} color="#E74C3C" />
               </TouchableOpacity>
             </View>
           </View>
@@ -313,7 +310,7 @@ export default function ManageScreen() {
                 </View>
 
                 <View style={styles.modalField}>
-                  <Text style={[styles.modalLabel, { color: colors.foreground }]}>Itsinda ry'imyaka</Text>
+                  <Text style={[styles.modalLabel, { color: colors.foreground }]}>Ikiciro cy'umwana</Text>
                   <View style={styles.ageRow}>
                     {AGE_CATEGORIES.map((cat) => (
                       <TouchableOpacity
@@ -328,7 +325,7 @@ export default function ManageScreen() {
                         onPress={() => setEditAge(cat.id)}
                       >
                         <Text style={[styles.ageBtnText, { color: editAge === cat.id ? "#fff" : cat.color }]}>
-                          {cat.label}m
+                          {cat.label}
                         </Text>
                       </TouchableOpacity>
                     ))}
@@ -427,7 +424,11 @@ const styles = StyleSheet.create({
   newBadgeText: { fontSize: 10, fontFamily: "Inter_600SemiBold" },
   rowMeta: { fontSize: 11, fontFamily: "Inter_400Regular" },
   rowActions: { flexDirection: "row", gap: 6 },
-  actionBtn: { width: 32, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  actionButton: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: "#EBF5FB"
+  },
   // Modal
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
   modalKav: { justifyContent: "flex-end" },

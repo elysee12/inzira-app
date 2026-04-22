@@ -29,9 +29,10 @@ interface AuthContextType extends AuthState {
   resetPassword: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   sendOtp: (email: string) => Promise<{ success: boolean; error?: string }>;
   verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; error?: string }>;
+  updateUser: (updates: { name?: string; phone?: string; email?: string }) => Promise<{ success: boolean; error?: string }>;
 }
 
-const STORAGE_KEY = "inzira_auth";
+const STORAGE_KEY = "imirire_auth";
 const TOKEN_KEY = "userToken";
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -183,6 +184,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateUser = useCallback(async (updates: { name?: string; phone?: string; email?: string }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      if (!state.userId) throw new Error("User ID missing");
+      
+      const response = await apiClient.patch(`/users/${state.userId}`, updates);
+      const updatedUser = response.data;
+
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const newData = { 
+          ...parsed, 
+          userName: updatedUser.name, 
+          userPhone: updatedUser.phone, 
+          email: updatedUser.email 
+        };
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+        setState((s) => ({ 
+          ...s, 
+          userName: updatedUser.name, 
+          userPhone: updatedUser.phone 
+        }));
+      }
+      
+      return { success: true };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.response?.data?.message || "Guhindura amakuru ntibyashobotse." 
+      };
+    }
+  }, [state.userId]);
+
   const logout = useCallback(async () => {
     await AsyncStorage.removeItem(STORAGE_KEY);
     await AsyncStorage.removeItem(TOKEN_KEY);
@@ -191,7 +225,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, findUserByEmail, resetPassword, sendOtp, verifyOtp }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, findUserByEmail, resetPassword, sendOtp, verifyOtp, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

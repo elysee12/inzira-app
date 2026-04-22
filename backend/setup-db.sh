@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Setting up Inzira database..."
+echo "Setting up Imirire database..."
 
 # Push the schema to the database
 echo "Pushing Prisma schema..."
@@ -13,5 +13,5 @@ npx ts-node prisma/seed.ts
 echo "Database setup complete!"
 echo ""
 echo "Test credentials:"
-echo "Email: admin@inzira.rw"
+echo "Email: admin@imirire.rw"
 echo "Password: Admin@123"

@@ -37,11 +37,11 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     setError("");
-    if (!name.trim()) { Alert.alert("Umiryango", "Injiza izina ryawe ryuzuye."); return; }
-    if (!phone.trim() || phone.trim().length < 10) { Alert.alert("Umiryango", "Injiza nimero ya telefoni yuzuye."); return; }
-    if (!email.trim() || !email.includes("@")) { Alert.alert("Umiryango", "Injiza imeli yuzuye kandi igenga neza."); return; }
-    if (password.length < 6) { Alert.alert("Umiryango", "Ijambo ry'ibanga rigomba kuba rifite inyuguti nibura 6."); return; }
-    if (password !== confirmPassword) { Alert.alert("Umiryango", "Amagambo y'ibanga ntahura. Gerageza nanone."); return; }
+    if (!name.trim()) { Alert.alert("Ikitonderwa", "Injiza izina ryawe ryuzuye."); return; }
+    if (!phone.trim() || phone.trim().length < 10) { Alert.alert("Ikitonderwa", "Injiza nimero ya telefoni yuzuye."); return; }
+    if (!email.trim() || !email.includes("@")) { Alert.alert("Ikitonderwa", "Injiza imeli yuzuye kandi igenga neza."); return; }
+    if (password.length < 6) { Alert.alert("Ikitonderwa", "Ijambo ry'ibanga rigomba kuba rifite inyuguti nibura 6."); return; }
+    if (password !== confirmPassword) { Alert.alert("Ikitonderwa", "Amagambo y'ibanga ntahura. Gerageza nanone."); return; }
 
     setLoading(true);
     const result = await register(name.trim(), phone.trim(), email.trim(), password);
@@ -51,7 +51,7 @@ export default function RegisterScreen() {
       setSuccess(true);
     } else {
       setError(result.error ?? "Kwiyandikisha ntibyashobotse. Gerageza nanone.");
-      Alert.alert("Makosa", result.error ?? "Kwiyandikisha ntibyashobotse. Gerageza nanone.");
+      Alert.alert("Ikibazo", result.error ?? "Kwiyandikisha ntibyashobotse. Gerageza nanone.");
     }
   };
 

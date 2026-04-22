@@ -27,7 +27,7 @@ const ADMIN_COLOR = "#2980B9";
 export default function UploadScreen() {
   const colors = useColors();
   const { userName, userId } = useAuth();
-  const { addContent } = useContent();
+  const { addContent, ageCategories } = useContent();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -36,6 +36,8 @@ export default function UploadScreen() {
   const [duration, setDuration] = useState("");
   const [selectedFile, setSelectedFile] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
+
+  const displayCategories = ageCategories.length > 0 ? ageCategories : AGE_CATEGORIES;
 
   const types: { type: ContentType; icon: string; label: string }[] = [
     { type: "text", icon: "file-text", label: "Inyandiko" },
@@ -55,13 +57,13 @@ export default function UploadScreen() {
         setSelectedFile(result.assets[0]);
       }
     } catch (err) {
-      Alert.alert("Makosa", "Guhitamo dosiye ntibyashobotse.");
+      Alert.alert("Ikibazo", "Guhitamo dosiye ntibyashobotse.");
     }
   };
 
   const handleUpload = async () => {
     if (!title.trim() || !selectedAge || !selectedFile) {
-      Alert.alert("Makosa", "Uzuza insobe zose zisabwa: umutwe, itsinda ry'imyaka n'idosiye.");
+      Alert.alert("Ikibazo", "Uzuza amakuru yose asabwa: umutwe, ikiciro cy'umwana n'idosiye.");
       return;
     }
     
@@ -86,7 +88,7 @@ export default function UploadScreen() {
       Alert.alert("Byagenze!", "Isomo ryongewe neza kandi ababyeyi barashobora kurireba.");
     } catch (error) {
       setUploading(false);
-      Alert.alert("Makosa", "Isomo ntibyashobotse kuribika. Gerageza nanone.");
+      Alert.alert("Ikibazo", "Isomo ntibyashobotse kuribika. Gerageza nanone.");
     }
   };
 
@@ -191,10 +193,10 @@ export default function UploadScreen() {
 
           <View style={styles.section}>
             <Text style={[styles.label, { color: colors.foreground }]}>
-              Itsinda ry'imyaka <Text style={{ color: "#ef4444" }}>*</Text>
+              Ikiciro cy'umwana <Text style={{ color: "#ef4444" }}>*</Text>
             </Text>
             <View style={styles.ageRow}>
-              {AGE_CATEGORIES.map((cat) => (
+              {displayCategories.map((cat) => (
                 <TouchableOpacity
                   key={cat.id}
                   style={[
@@ -204,7 +206,7 @@ export default function UploadScreen() {
                       borderColor: cat.color,
                     },
                   ]}
-                  onPress={() => setSelectedAge(cat.id)}
+                  onPress={() => setSelectedAge(cat.id as AgeGroup)}
                   activeOpacity={0.8}
                 >
                   <Text
@@ -213,7 +215,7 @@ export default function UploadScreen() {
                       { color: selectedAge === cat.id ? "#fff" : cat.color },
                     ]}
                   >
-                    {cat.label}m
+                    {cat.label}{cat.sublabel ? ` ${cat.sublabel}` : ''}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -236,12 +238,18 @@ export default function UploadScreen() {
               )}
             </Text>
             <Text style={[styles.uploadBoxSub, { color: colors.mutedForeground }]}>
-              Porogaramu irina reba dosiye zibitswe ku rubuga. Kanda kugira ngo uhitemo.
+              Porogaramu ibika dosiye zibitswe ku rubuga. Kanda kugira ngo uhitemo.
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.submitBtn, { backgroundColor: isReady ? ADMIN_COLOR : colors.muted }]}
+            style={[
+              styles.submitBtn, 
+              { 
+                backgroundColor: isReady ? ADMIN_COLOR : colors.muted,
+                opacity: uploading ? 0.7 : 1 
+              }
+            ]}
             onPress={handleUpload}
             disabled={uploading || !isReady}
             activeOpacity={0.85}
@@ -250,13 +258,32 @@ export default function UploadScreen() {
               <Text style={[styles.submitText, { color: "#fff" }]}>Birimo kubikwa...</Text>
             ) : (
               <>
-                <Feather name="check-circle" size={18} color={isReady ? "#fff" : colors.mutedForeground} />
-                <Text style={[styles.submitText, { color: isReady ? "#fff" : colors.mutedForeground }]}>
+                <Feather 
+                  name="check-circle" 
+                  size={18} 
+                  color={isReady ? "#fff" : colors.mutedForeground} 
+                />
+                <Text style={[
+                  styles.submitText, 
+                  { color: isReady ? "#fff" : colors.mutedForeground }
+                ]}>
                   Bika Isomo
                 </Text>
               </>
             )}
           </TouchableOpacity>
+          
+          {!isReady && !uploading && (
+            <Text style={{ 
+              color: "#ef4444", 
+              fontSize: 12, 
+              textAlign: "center", 
+              marginTop: 8,
+              fontFamily: "Inter_400Regular"
+            }}>
+              Uzuza insobe zose zisabwa (*) kugira ngo ubike.
+            </Text>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </View>

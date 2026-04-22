@@ -21,11 +21,12 @@ export default function ParentHomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { userName } = useAuth();
-  const { allContent, getByAge } = useContent();
+  const { allContent, ageCategories, getByAge } = useContent();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   const recentContent = allContent.filter((c) => c.isNew).slice(0, 4);
+  const displayCategories = ageCategories.length > 0 ? ageCategories : AGE_CATEGORIES;
 
   return (
     <ScrollView
@@ -126,11 +127,11 @@ export default function ParentHomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
-              Hitamo itsinda ry'imyaka
+              Hitamo ikiciro cy'umwana
             </Text>
           </View>
 
-          {AGE_CATEGORIES.map((category) => (
+          {displayCategories.map((category) => (
             <AgeCategoryCard
               key={category.id}
               category={category}

@@ -1,38 +1,55 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import apiClient from "./apiClient";
-import type { AgeGroup, ContentItem } from "@/data/staticData";
+import type { AgeGroup, ContentItem, AgeCategory } from "@/data/staticData";
 
 interface ContentContextValue {
   allContent: ContentItem[];
+  ageCategories: AgeCategory[];
   getByAge: (ageGroup: AgeGroup) => ContentItem[];
   addContent: (item: any, file?: any) => Promise<void>;
   deleteContent: (id: string) => Promise<void>;
   editContent: (id: string, updates: Partial<Omit<ContentItem, "id">>, file?: any) => Promise<{ success: boolean; error?: string }>;
+  editAgeCategory: (id: string, updates: Partial<AgeCategory>, image?: any) => Promise<{ success: boolean; error?: string }>;
   isLoaded: boolean;
   refreshContent: () => Promise<void>;
+  refreshAgeCategories: () => Promise<void>;
 }
 
 const ContentContext = createContext<ContentContextValue | null>(null);
 
 export function ContentProvider({ children }: { children: React.ReactNode }) {
   const [allContent, setAllContent] = useState<ContentItem[]>([]);
+  const [ageCategories, setAgeCategories] = useState<AgeCategory[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const refreshContent = useCallback(async () => {
     try {
-      const response = await apiClient.get('/content');
+      const response = await apiClient.get('content');
       setAllContent(response.data);
     } catch (error) {
       // Error handling suppressed; content will be empty
-    } finally {
-      setIsLoaded(true);
+    }
+  }, []);
+
+  const refreshAgeCategories = useCallback(async () => {
+    try {
+      const response = await apiClient.get('age-categories');
+      if (response.data && response.data.length > 0) {
+        setAgeCategories(response.data);
+      }
+    } catch (error) {
+      // Error handling suppressed
     }
   }, []);
 
   useEffect(() => {
-    refreshContent();
-  }, [refreshContent]);
+    const loadData = async () => {
+      await Promise.all([refreshContent(), refreshAgeCategories()]);
+      setIsLoaded(true);
+    };
+    loadData();
+  }, [refreshContent, refreshAgeCategories]);
 
   const getByAge = useCallback(
     (ageGroup: AgeGroup) => allContent.filter((c) => c.ageGroup === ageGroup),
@@ -55,7 +72,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
           } as any);
         }
 
-        await apiClient.post('/content', formData, {
+        await apiClient.post('content', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -71,7 +88,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
   const deleteContent = useCallback(
     async (id: string) => {
       try {
-        await apiClient.delete(`/content/${id}`);
+        await apiClient.delete(`content/${id}`);
         await refreshContent();
       } catch (error: any) {
         throw error;
@@ -94,13 +111,13 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
             type: file.mimeType || 'application/octet-stream',
           } as any);
           
-          await apiClient.patch(`/content/${id}`, formData, {
+          await apiClient.patch(`content/${id}`, formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
           });
         } else {
-          await apiClient.patch(`/content/${id}`, updates);
+          await apiClient.patch(`content/${id}`, updates);
         }
         await refreshContent();
         return { success: true };
@@ -111,8 +128,51 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
     [refreshContent]
   );
 
+  const editAgeCategory = useCallback(
+    async (id: string, updates: Partial<AgeCategory>, image?: any): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const formData = new FormData();
+        Object.entries(updates).forEach(([key, value]) => {
+          if (value !== undefined) {
+            formData.append(key, value as string);
+          }
+        });
+        
+        if (image) {
+          formData.append('image', {
+            uri: image.uri,
+            name: image.name || 'category-image',
+            type: image.mimeType || 'image/jpeg',
+          } as any);
+        }
+
+        await apiClient.patch(`age-categories/${encodeURIComponent(id)}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        await refreshAgeCategories();
+        return { success: true };
+      } catch (error: any) {
+        return { success: false, error: error.message || "Guhindura ikiciro cy'umwana ntibyashobotse." };
+      }
+    },
+    [refreshAgeCategories]
+  );
+
   return (
-    <ContentContext.Provider value={{ allContent, getByAge, addContent, deleteContent, editContent, isLoaded, refreshContent }}>
+    <ContentContext.Provider value={{ 
+      allContent, 
+      ageCategories,
+      getByAge, 
+      addContent, 
+      deleteContent, 
+      editContent, 
+      editAgeCategory,
+      isLoaded, 
+      refreshContent,
+      refreshAgeCategories
+    }}>
       {children}
     </ContentContext.Provider>
   );

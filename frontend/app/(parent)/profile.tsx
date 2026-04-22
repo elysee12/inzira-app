@@ -1,5 +1,5 @@
 import { Feather } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Platform,
@@ -9,6 +9,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TextInput,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -16,18 +18,52 @@ import { AppHeader } from "@/components/AppHeader";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
 
-type ModalType = null | "profile" | "notifications" | "language" | "guidelines" | "help";
+type ModalType = null | "profile" | "notifications" | "language" | "guidelines" | "help" | "edit_profile";
 
 export default function ParentProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { userName, userPhone, logout } = useAuth();
+  const { userName, userPhone, logout, updateUser } = useAuth();
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [notifEnabled, setNotifEnabled] = useState(true);
   const [lessonNotif, setLessonNotif] = useState(true);
   const [tipNotif, setTipNotif] = useState(false);
+
+  // Edit Profile State
+  const [editName, setEditName] = useState(userName);
+  const [editPhone, setEditPhone] = useState(userPhone);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (activeModal === "edit_profile") {
+      setEditName(userName);
+      setEditPhone(userPhone);
+    }
+  }, [activeModal, userName, userPhone]);
+
+  const handleUpdateProfile = async () => {
+    if (!editName.trim()) {
+      Alert.alert("Ikitonderwa", "Izina rirabura.");
+      return;
+    }
+    if (!editPhone.trim()) {
+      Alert.alert("Ikitonderwa", "Nimero ya telefoni irabura.");
+      return;
+    }
+
+    setSaving(true);
+    const result = await updateUser({ name: editName.trim(), phone: editPhone.trim() });
+    setSaving(false);
+
+    if (result.success) {
+      Alert.alert("Byagenze neza", "Umwirondoro wawe wahinduwe neza!");
+      setActiveModal(null);
+    } else {
+      Alert.alert("Ikibazo", result.error || "Guhindura amakuru ntibyashobotse.");
+    }
+  };
 
   const menuItems = [
     { icon: "user", label: "Umwirondoro wanjye", sublabel: userName || "Umubyeyi", modal: "profile" as ModalType },
@@ -55,10 +91,19 @@ export default function ParentProfileScreen() {
             <InfoRow icon="phone" label="Telefoni" value={userPhone || "N/A"} colors={colors} />
             <InfoRow icon="calendar" label="Yiyandikishije" value="Mutarama 2025" colors={colors} />
             <InfoRow icon="book-open" label="Amasomo Yasomye" value="3 amasomo" colors={colors} />
+            
+            <TouchableOpacity 
+              style={[styles.editBtn, { backgroundColor: colors.primary }]} 
+              onPress={() => setActiveModal("edit_profile")}
+            >
+              <Feather name="edit-2" size={16} color="#fff" />
+              <Text style={styles.editBtnText}>Hindura Umwirondoro</Text>
+            </TouchableOpacity>
+
             <View style={[styles.infoHint, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
               <Feather name="info" size={13} color={colors.mutedForeground} />
               <Text style={[styles.infoHintText, { color: colors.mutedForeground }]}>
-                Kugira ngo uhindure amakuru yawe, tuhuze na support@inzira.rw.
+                Kugira ngo uhindure amakuru yawe, twandikire kuri support@imirire.rw.
               </Text>
             </View>
           </>
@@ -198,7 +243,7 @@ export default function ParentProfileScreen() {
             />
             <FaqItem
               q="Amakuru y'umwana bari hehe?"
-              a="Inyigisho zose zirashingiye ku myaka y'umwana wawe. Hitamo itsinda ry'imyaka kuri paji ya 'Ahabanza'."
+              a="Inyigisho zose zirashingiye ku myaka y'umwana wawe. Hitamo ikiciro cy'umwana kuri paji ya 'Ahabanza'."
               colors={colors}
             />
             <FaqItem
@@ -215,10 +260,52 @@ export default function ParentProfileScreen() {
               <Feather name="mail" size={18} color={colors.primary} />
               <View>
                 <Text style={[styles.contactLabel, { color: colors.primary }]}>Twandikire</Text>
-                <Text style={[styles.contactValue, { color: colors.foreground }]}>support@inzira.rw</Text>
+                <Text style={[styles.contactValue, { color: colors.foreground }]}>support@imirire.rw</Text>
               </View>
             </View>
           </>
+        );
+
+      case "edit_profile":
+        return (
+          <View style={styles.editForm}>
+            <View style={styles.editField}>
+              <Text style={[styles.editLabel, { color: colors.foreground }]}>Izina ryuzuye</Text>
+              <View style={[styles.editInputWrap, { borderColor: colors.border, backgroundColor: colors.secondary }]}>
+                <Feather name="user" size={16} color={colors.mutedForeground} />
+                <TextInput
+                  style={[styles.editInput, { color: colors.foreground }]}
+                  value={editName}
+                  onChangeText={setEditName}
+                  placeholder="Izina ryawe"
+                  placeholderTextColor={colors.mutedForeground}
+                />
+              </View>
+            </View>
+
+            <View style={styles.editField}>
+              <Text style={[styles.editLabel, { color: colors.foreground }]}>Nimero ya Telefoni</Text>
+              <View style={[styles.editInputWrap, { borderColor: colors.border, backgroundColor: colors.secondary }]}>
+                <Feather name="phone" size={16} color={colors.mutedForeground} />
+                <TextInput
+                  style={[styles.editInput, { color: colors.foreground }]}
+                  value={editPhone}
+                  onChangeText={setEditPhone}
+                  placeholder="07X XXX XXXX"
+                  placeholderTextColor={colors.mutedForeground}
+                  keyboardType="phone-pad"
+                />
+              </View>
+            </View>
+
+            <TouchableOpacity 
+              style={[styles.saveEditBtn, { backgroundColor: colors.primary, opacity: saving ? 0.7 : 1 }]} 
+              onPress={handleUpdateProfile}
+              disabled={saving}
+            >
+              <Text style={styles.saveEditBtnText}>{saving ? "Biri kubikwa..." : "Bika Impinduka"}</Text>
+            </TouchableOpacity>
+          </View>
         );
 
       default:
@@ -232,6 +319,7 @@ export default function ParentProfileScreen() {
     language: "Ururimi",
     guidelines: "Amabwiriza y'Ubuzima",
     help: "Ubufasha",
+    edit_profile: "Hindura Umwirondoro",
   };
 
   return (
@@ -289,7 +377,7 @@ export default function ParentProfileScreen() {
         </TouchableOpacity>
 
         <Text style={[styles.version, { color: colors.mutedForeground }]}>
-          Verisiyo 1.0.0 • Inzira App
+          Verisiyo 1.0.0 • Imirire App
         </Text>
       </ScrollView>
 
@@ -428,4 +516,36 @@ const styles = StyleSheet.create({
   contactBox: { flexDirection: "row", gap: 12, padding: 16, borderRadius: 14, borderWidth: 1, alignItems: "center" },
   contactLabel: { fontSize: 12, fontFamily: "Inter_500Medium" },
   contactValue: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
+  editBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  editBtnText: { color: "#fff", fontSize: 14, fontFamily: "Inter_600SemiBold" },
+  editForm: { gap: 16, paddingVertical: 8 },
+  editField: { gap: 8 },
+  editLabel: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  editInputWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  editInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular" },
+  saveEditBtn: {
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+  },
+  saveEditBtnText: { color: "#fff", fontSize: 16, fontFamily: "Inter_600SemiBold" },
 });

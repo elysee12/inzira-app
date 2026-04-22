@@ -23,7 +23,7 @@ export default function LessonsScreen() {
 
   const filters = [
     { id: ALL_FILTER, label: "Byose" },
-    ...AGE_CATEGORIES.map((c) => ({ id: c.id, label: `${c.label}m` })),
+    ...AGE_CATEGORIES.map((c) => ({ id: c.id, label: c.label })),
   ];
 
   const filtered =

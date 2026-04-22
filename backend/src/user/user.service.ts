@@ -77,4 +77,25 @@ export class UserService {
 
     return { total, byRole, byDate };
   }
+
+  async update(id: number, data: any): Promise<UserPublic> {
+    return this.prisma.user.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        name: true,
+        role: true,
+        createdAt: true,
+      },
+    }) as any;
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.prisma.user.delete({
+      where: { id },
+    });
+  }
 }

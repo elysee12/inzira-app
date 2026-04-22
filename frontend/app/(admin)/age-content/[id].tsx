@@ -18,9 +18,9 @@ export default function AdminAgeContentScreen() {
   const insets = useSafeAreaInsets();
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
   const { id } = useLocalSearchParams<{ id: AgeGroup }>();
-  const { getByAge } = useContent();
+  const { getByAge, ageCategories } = useContent();
 
-  const category = AGE_CATEGORIES.find((c) => c.id === id);
+  const category = ageCategories.find((c) => c.id === id) || AGE_CATEGORIES.find((c) => c.id === id);
   const content = getByAge(id as AgeGroup);
 
   if (!category) return null;
@@ -37,7 +37,13 @@ export default function AdminAgeContentScreen() {
         data={content}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ContentCard item={item} onPress={() => {}} />
+          <ContentCard 
+            item={item} 
+            onPress={() => router.push({
+              pathname: "/(admin)/content-viewer/[id]",
+              params: { id: item.id },
+            })} 
+          />
         )}
         contentContainerStyle={[styles.list, { paddingBottom: bottomPad + 24 }]}
         showsVerticalScrollIndicator={false}

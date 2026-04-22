@@ -5,6 +5,7 @@ import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native
 
 import type { AgeCategory } from "@/data/staticData";
 import { useColors } from "@/hooks/useColors";
+import { getImageUrl } from "@/context/apiClient";
 
 const AGE_IMAGES: Record<string, any> = {
   "0-6": require("../assets/images/age_0_6.png"),
@@ -22,6 +23,10 @@ interface AgeCategoryCardProps {
 export function AgeCategoryCard({ category, contentCount, onPress }: AgeCategoryCardProps) {
   const colors = useColors();
 
+  const imageSource = category.imageUrl 
+    ? { uri: getImageUrl(category.imageUrl) } 
+    : AGE_IMAGES[category.id];
+
   return (
     <TouchableOpacity
       style={[
@@ -33,7 +38,7 @@ export function AgeCategoryCard({ category, contentCount, onPress }: AgeCategory
     >
       <View style={[styles.imageContainer, { backgroundColor: category.bgColor }]}>
         <Image
-          source={AGE_IMAGES[category.id]}
+          source={imageSource}
           style={styles.image}
           contentFit="cover"
         />

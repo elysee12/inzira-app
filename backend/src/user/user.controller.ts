@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Patch, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 
 type UserPublic = {
@@ -34,5 +34,18 @@ export class UserController {
   @Get()
   async findAll(): Promise<UserPublic[]> {
     return this.userService.findAll();
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: any,
+  ): Promise<UserPublic> {
+    return this.userService.update(id, data);
+  }
+
+  @Delete(':id')
+  async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.userService.delete(id);
   }
 }

@@ -1,4 +1,4 @@
-﻿import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
@@ -10,6 +10,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
+  TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -46,6 +48,13 @@ export default function AdminProfileScreen() {
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("all");
   const [filteredParents, setFilteredParents] = useState<any[]>([]);
   const [stats, setStats] = useState({ total: 0, byRole: { ADMIN: 0, PARENT: 0 }, byDate: 0 });
+
+  // Parent Management State
+  const [editingParent, setEditingParent] = useState<any>(null);
+  const [parentName, setParentName] = useState("");
+  const [parentPhone, setParentPhone] = useState("");
+  const [parentEmail, setParentEmail] = useState("");
+  const [savingParent, setSavingParent] = useState(false);
 
   useEffect(() => {
     if (activeModal === "parents") {
@@ -88,6 +97,59 @@ export default function AdminProfileScreen() {
     setFilteredParents(filtered);
   };
 
+  const handleDeleteParent = async (parent: any) => {
+    Alert.alert(
+      "Siba Umubyeyi",
+      `Urifuza gusiba ${parent.name}? Ibi ntibishobora gusubirwamo.`,
+      [
+        { text: "Reka", style: "cancel" },
+        {
+          text: "Siba",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await apiClient.delete(`/users/${parent.id}`);
+              Alert.alert("Byagenze neza", "Umubyeyi yasibwe neza!");
+              fetchParents();
+            } catch (error: any) {
+              Alert.alert("Ikibazo", error.response?.data?.message || "Gusiba umubyeyi ntibyashobotse.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleEditParent = (parent: any) => {
+    setEditingParent(parent);
+    setParentName(parent.name);
+    setParentPhone(parent.phone);
+    setParentEmail(parent.email);
+  };
+
+  const handleSaveParentEdit = async () => {
+    if (!parentName.trim() || !parentPhone.trim() || !parentEmail.trim()) {
+      Alert.alert("Ikitonderwa", "Uzuza amakuru yose.");
+      return;
+    }
+
+    setSavingParent(true);
+    try {
+      await apiClient.patch(`/users/${editingParent.id}`, {
+        name: parentName.trim(),
+        phone: parentPhone.trim(),
+        email: parentEmail.trim(),
+      });
+      Alert.alert("Byagenze neza", "Amakuru y'umubyeyi yahinduwe neza!");
+      setEditingParent(null);
+      fetchParents();
+    } catch (error: any) {
+      Alert.alert("Ikibazo", error.response?.data?.message || "Guhindura amakuru ntibyashobotse.");
+    } finally {
+      setSavingParent(false);
+    }
+  };
+
   const textCount = allContent.filter((c) => c.type === "text").length;
   const audioCount = allContent.filter((c) => c.type === "audio").length;
   const videoCount = allContent.filter((c) => c.type === "video").length;
@@ -117,9 +179,20 @@ export default function AdminProfileScreen() {
               </View>
             </View>
             <InfoRow icon="phone" label="Telefoni" value={userPhone || "N/A"} colors={colors} />
-            <InfoRow icon="mail" label="Imeli" value="admin@inzira.rw" colors={colors} />
+            <InfoRow icon="mail" label="Imeli" value="admin@imirire.rw" colors={colors} />
             <InfoRow icon="calendar" label="Yinjiye" value="Mutarama 2025" colors={colors} />
             <InfoRow icon="lock" label="Ingereka" value="Umuyobozi Mukuru" colors={colors} />
+            <View
+              style={[
+                styles.infoBox,
+                { backgroundColor: colors.secondary, borderColor: colors.border, marginTop: 12 },
+              ]}
+            >
+              <Feather name="info" size="14" color={colors.primary} />
+              <Text style={[styles.infoBoxText, { color: colors.primary }]}>
+                Kugira ngo uhindure amakuru yawe, tuhuze na support@imirire.rw.
+              </Text>
+            </View>
           </>
         );
 
@@ -128,7 +201,7 @@ export default function AdminProfileScreen() {
           <>
             {/* Overview Section */}
             <View style={[styles.overviewCard, { backgroundColor: ADMIN_COLOR + "10", borderColor: ADMIN_COLOR + "30" }]}>
-              <Text style={[styles.overviewTitle, { color: ADMIN_COLOR }]}>Icyiciro cy'Ababyeyi</Text>
+              <Text style={[styles.overviewTitle, { color: ADMIN_COLOR }]}>Ikiciro cy'Ababyeyi</Text>
               <View style={styles.overviewStats}>
                 <View style={styles.statBox}>
                   <Text style={[styles.statValue, { color: ADMIN_COLOR }]}>{stats.total}</Text>
@@ -173,7 +246,7 @@ export default function AdminProfileScreen() {
             {loading ? (
               <View style={styles.loadingView}>
                 <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
-                  Ibireti...
+                  Birimo gushaka...
                 </Text>
               </View>
             ) : filteredParents.length === 0 ? (
@@ -240,6 +313,20 @@ export default function AdminProfileScreen() {
                       >
                         {new Date(p.createdAt).toLocaleDateString("rw-RW")}
                       </Text>
+                    </View>
+                    <View style={styles.parentActions}>
+                      <TouchableOpacity 
+                        style={[styles.actionBtn, { backgroundColor: colors.secondary }]}
+                        onPress={() => handleEditParent(p)}
+                      >
+                        <Feather name="edit-2" size={14} color={ADMIN_COLOR} />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.actionBtn, { backgroundColor: "#FEE2E2" }]}
+                        onPress={() => handleDeleteParent(p)}
+                      >
+                        <Feather name="trash-2" size={14} color="#ef4444" />
+                      </TouchableOpacity>
                     </View>
                   </View>
                 ))}
@@ -398,7 +485,7 @@ export default function AdminProfileScreen() {
           <>
             <FaqItem
               q="Nshobora ute gutunga ikibazo?"
-              a="Twandikire kuri support@inzira.rw cyangwa uturuhe ubutumwa."
+              a="Twandikire kuri support@imirire.rw cyangwa uturuhe ubutumwa."
               colors={colors}
             />
             <FaqItem
@@ -426,7 +513,7 @@ export default function AdminProfileScreen() {
                   Imeli y'ubufasha
                 </Text>
                 <Text style={[styles.contactValue, { color: colors.foreground }]}>
-                  support@inzira.rw
+                  support@imirire.rw
                 </Text>
               </View>
             </View>
@@ -524,7 +611,7 @@ export default function AdminProfileScreen() {
         </TouchableOpacity>
 
         <Text style={[styles.version, { color: colors.mutedForeground }]}>
-          Verisiyo 1.0.0 • Inzira App - Icyiciro cy'Umuyobozi
+          Verisiyo 1.0.0 • Imirire App - Icyiciro cy'Umuyobozi
         </Text>
       </ScrollView>
 
@@ -549,6 +636,78 @@ export default function AdminProfileScreen() {
               showsVerticalScrollIndicator={false}
             >
               {renderModalContent()}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Parent Modal */}
+      <Modal
+        visible={!!editingParent}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setEditingParent(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalSheet, { backgroundColor: colors.background }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.foreground }]}>
+                Hindura Amakuru y'Umubyeyi
+              </Text>
+              <TouchableOpacity onPress={() => setEditingParent(null)}>
+                <Feather name="x" size={22} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              contentContainerStyle={styles.modalContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.editField}>
+                <Text style={[styles.editLabel, { color: colors.foreground }]}>Izina ryuzuye</Text>
+                <View style={[styles.editInputWrap, { borderColor: colors.border, backgroundColor: colors.secondary }]}>
+                  <TextInput
+                    style={[styles.editInput, { color: colors.foreground }]}
+                    value={parentName}
+                    onChangeText={setParentName}
+                    placeholder="Izina"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.editField}>
+                <Text style={[styles.editLabel, { color: colors.foreground }]}>Telefoni</Text>
+                <View style={[styles.editInputWrap, { borderColor: colors.border, backgroundColor: colors.secondary }]}>
+                  <TextInput
+                    style={[styles.editInput, { color: colors.foreground }]}
+                    value={parentPhone}
+                    onChangeText={setParentPhone}
+                    placeholder="Nimero"
+                    keyboardType="phone-pad"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.editField}>
+                <Text style={[styles.editLabel, { color: colors.foreground }]}>Imeli</Text>
+                <View style={[styles.editInputWrap, { borderColor: colors.border, backgroundColor: colors.secondary }]}>
+                  <TextInput
+                    style={[styles.editInput, { color: colors.foreground }]}
+                    value={parentEmail}
+                    onChangeText={setParentEmail}
+                    placeholder="Imeli"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+              </View>
+
+              <TouchableOpacity 
+                style={[styles.saveBtn, { backgroundColor: ADMIN_COLOR, marginTop: 12, opacity: savingParent ? 0.7 : 1 }]} 
+                onPress={handleSaveParentEdit}
+                disabled={savingParent}
+              >
+                <Text style={styles.saveBtnText}>{savingParent ? "Biri kubikwa..." : "Bika Impinduka"}</Text>
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
@@ -853,4 +1012,33 @@ const styles = StyleSheet.create({
   filterBtnText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
   loadingView: { alignItems: "center", paddingVertical: 32 },
   loadingText: { fontSize: 14, fontFamily: "Inter_400Regular" },
+  parentActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  actionBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  editField: { gap: 8, marginBottom: 16 },
+  editLabel: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  editInputWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  editInput: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular" },
+  saveBtn: {
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  saveBtnText: { color: "#fff", fontSize: 16, fontFamily: "Inter_600SemiBold" },
 });
