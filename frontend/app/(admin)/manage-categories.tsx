@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -29,7 +30,7 @@ export default function ManageCategoriesScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
-  const { ageCategories, editAgeCategory, refreshAgeCategories } = useContent();
+  const { ageCategories, editAgeCategory, isLoaded } = useContent();
   
   const [editingCategory, setEditingCategory] = useState<AgeCategory | null>(null);
   const [editLabel, setEditLabel] = useState("");
@@ -87,40 +88,55 @@ export default function ManageCategoriesScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <AppHeader title="Genzura Imyaka" showBack backgroundColor={ADMIN_COLOR} />
 
-      <FlatList
-        data={ageCategories}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={[styles.list, { paddingBottom: bottomPad + 80 }]}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
-            onPress={() => openEdit(item)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.cardContent}>
-              <View style={[styles.imageContainer, { backgroundColor: item.bgColor }]}>
-                {item.imageUrl ? (
-                  <Image 
-                    source={{ uri: getImageUrl(item.imageUrl) }} 
-                    style={styles.cardImage} 
-                  />
-                ) : (
-                  <Feather name="image" size={24} color={item.color} />
-                )}
+      {!isLoaded ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={ADMIN_COLOR} />
+          <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>Biri gufunguka...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={ageCategories}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={[styles.list, { paddingBottom: bottomPad + 80 }]}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => openEdit(item)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.cardContent}>
+                <View style={[styles.imageContainer, { backgroundColor: item.bgColor }]}>
+                  {item.imageUrl ? (
+                    <Image 
+                      source={{ uri: getImageUrl(item.imageUrl) }} 
+                      style={styles.cardImage} 
+                    />
+                  ) : (
+                    <Feather name="image" size={24} color={item.color} />
+                  )}
+                </View>
+                <View style={styles.cardText}>
+                  <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+                    {item.label} {item.sublabel}
+                  </Text>
+                  <Text style={[styles.cardDesc, { color: colors.mutedForeground }]} numberOfLines={2}>
+                    {item.description}
+                  </Text>
+                </View>
+                <Feather name="edit-2" size={18} color={ADMIN_COLOR} />
               </View>
-              <View style={styles.cardText}>
-                <Text style={[styles.cardTitle, { color: colors.foreground }]}>
-                  {item.label} {item.sublabel}
-                </Text>
-                <Text style={[styles.cardDesc, { color: colors.mutedForeground }]} numberOfLines={2}>
-                  {item.description}
-                </Text>
-              </View>
-              <Feather name="edit-2" size={18} color={ADMIN_COLOR} />
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Feather name="info" size={40} color={colors.mutedForeground} />
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                Nta byiciro by'imyaka byabonetse.
+              </Text>
             </View>
-          </TouchableOpacity>
-        )}
-      />
+          }
+        />
+      )}
 
       <Modal
         visible={!!editingCategory}
@@ -282,4 +298,25 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   saveBtnText: { color: "#fff", fontSize: 16, fontFamily: "Inter_600SemiBold" },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 15,
+    fontFamily: "Inter_500Medium",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 60,
+    gap: 12,
+  },
+  emptyText: {
+    fontSize: 15,
+    fontFamily: "Inter_500Medium",
+    textAlign: "center",
+  },
 });

@@ -20,9 +20,10 @@ import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 
 import { useContent } from "@/context/ContentContext";
+import { DocumentPreviewModal } from "@/components/DocumentPreviewModal";
 import { AGE_CATEGORIES } from "@/data/staticData";
 import { useColors } from "@/hooks/useColors";
-import { API_URL } from "@/context/apiClient";
+import { API_URL, getImageUrl } from "@/context/apiClient";
 
 const TYPE_ICONS: Record<string, string> = {
   text: "file-text",
@@ -60,6 +61,7 @@ export default function ContentDetailScreen() {
   const [currentPosition, setCurrentPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
 
   if (!item) {
     return (
@@ -77,9 +79,8 @@ export default function ContentDetailScreen() {
 
   const typeColor = TYPE_COLORS[item.type] ?? colors.primary;
   
-  // Construct full file URL (remove /api suffix from API_URL)
-  const BASE_HOST = API_URL.replace("/api", "");
-  const rawFileUrl = item.fileUrl ? `${BASE_HOST}${item.fileUrl}` : null;
+  // Construct full file URL
+  const rawFileUrl = item.fileUrl ? getImageUrl(item.fileUrl) : null;
 
   const handleDownload = async () => {
     if (!rawFileUrl) {
@@ -287,45 +288,26 @@ export default function ContentDetailScreen() {
 
         {rawFileUrl && item.type === "text" && (
           <View style={styles.webViewContainer}>
-            {rawFileUrl.toLowerCase().endsWith('.pdf') ? (
-              <View style={[styles.pdfContainer, { backgroundColor: colors.secondary }]}>
-                <Feather name="file-text" size={50} color={colors.primary} />
-                <Text style={[styles.pdfTitle, { color: colors.foreground }]}>
-                  {item.title}
-                </Text>
-                <Text style={[styles.pdfText, { color: colors.mutedForeground }]}>
-                  PDF Document - Kanda "Bika" kugira ngo usome kuri telefoni yawe.
-                </Text>
-                <TouchableOpacity 
-                  style={[styles.openPdfBtn, { backgroundColor: colors.primary }]}
-                  onPress={() => {
-                    if (Platform.OS === 'android' || Platform.OS === 'ios') {
-                      Linking.openURL(rawFileUrl).catch(() => {
-                        Alert.alert("Makosa", "Dosiye ntishobora kugabuka. Kanda 'Bika' kugira ngo uyishyire kuri telefoni.");
-                      });
-                    }
-                  }}
-                >
-                  <Feather name="eye" size={18} color="#fff" />
-                  <Text style={styles.openPdfBtnText}>Reba Dosiye</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <WebView 
-                source={{ uri: rawFileUrl }} 
-                style={styles.webView}
-                startInLoadingState
-                renderLoading={() => <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />}
-                onError={() => (
-                  <View style={[styles.pdfContainer, { backgroundColor: colors.secondary }]}>
-                    <Feather name="alert-circle" size={40} color={colors.primary} />
-                    <Text style={[styles.pdfText, { color: colors.foreground }]}>
-                      Dosiye ntishobora kurangizwa. Kanda "Bika" kugira ngo uyishyire kuri telefoni.
-                    </Text>
-                  </View>
-                )}
+            <View style={[styles.pdfContainer, { backgroundColor: colors.secondary }]}>
+              <Feather 
+                name={rawFileUrl.toLowerCase().endsWith('.pdf') ? "file-text" : "file"} 
+                size={50} 
+                color={colors.primary} 
               />
-            )}
+              <Text style={[styles.pdfTitle, { color: colors.foreground }]}>
+                {item.title}
+              </Text>
+              <Text style={[styles.pdfText, { color: colors.mutedForeground }]}>
+                Inyandiko ya {rawFileUrl.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Word'}
+              </Text>
+              <TouchableOpacity 
+                style={[styles.openPdfBtn, { backgroundColor: colors.primary }]}
+                onPress={() => setPreviewVisible(true)}
+              >
+                <Feather name="eye" size={18} color="#fff" />
+                <Text style={styles.openPdfBtnText}>Soma Inyandiko</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -359,6 +341,16 @@ export default function ContentDetailScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {rawFileUrl && (
+        <DocumentPreviewModal
+          visible={previewVisible}
+          onClose={() => setPreviewVisible(false)}
+          fileUrl={rawFileUrl}
+          title={item.title}
+          textContent={item.textContent}
+        />
+      )}
     </View>
   );
 }

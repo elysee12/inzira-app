@@ -2,15 +2,14 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// Local testing IP (from your ipconfig)
-const LOCAL_IP = '10.41.233.24';
+// Use Render URL for production
+// export const BASE_URL = 'https://inzira-app.onrender.com';
+// export const API_URL = `${BASE_URL}/api`;
 
-// Use local IP for testing on your phone, or Render for production
+// Local testing IP (from your ipconfig)
+const LOCAL_IP = '10.202.102.24';
 export const BASE_URL = `http://${LOCAL_IP}:3000`;
 export const API_URL = `${BASE_URL}/api`;
-
-// export const API_URL = 'https://imirire-app.onrender.com/api';
-// export const BASE_URL = 'https://imirire-app.onrender.com';
 
 export const getImageUrl = (path: string) => {
   if (!path) return null;

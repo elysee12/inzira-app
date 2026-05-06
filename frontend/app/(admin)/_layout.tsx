@@ -79,11 +79,15 @@ export default function AdminLayout() {
       />
       <Tabs.Screen
         name="age-content/[id]"
-        options={{ href: null }}
+        options={{ 
+          href: null 
+        }}
       />
       <Tabs.Screen
         name="content-viewer/[id]"
-        options={{ href: null }}
+        options={{ 
+          href: null 
+        }}
       />
     </Tabs>
   );

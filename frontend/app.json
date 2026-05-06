@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "Imirire - Uburezi bw'Umwana",
-    "slug": "imirire-app",
+    "slug": "inzira-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "imirire-app",
+    "scheme": "inzira-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -41,6 +41,12 @@
       "eas": {
         "projectId": "edd6c93c-8a01-464e-b5f7-2c0d66060d2b"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/edd6c93c-8a01-464e-b5f7-2c0d66060d2b"
     }
   }
 }

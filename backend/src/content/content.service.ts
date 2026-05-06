@@ -1,12 +1,84 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Content } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as mammoth from 'mammoth';
+import { PDFParse } from 'pdf-parse';
 
 @Injectable()
-export class ContentService {
+export class ContentService implements OnModuleInit {
   constructor(private prisma: PrismaService) {}
+
+  async onModuleInit() {
+    console.log('ContentService initialized. Checking for missing textContent...');
+    await this.reExtractAllMissingText();
+  }
+
+  private async reExtractAllMissingText() {
+    try {
+      const contents = await this.prisma.content.findMany({
+        where: {
+          textContent: null,
+          fileUrl: {
+            not: null,
+          },
+        },
+      });
+
+      console.log(`Found ${contents.length} items with missing textContent.`);
+
+      for (const item of contents) {
+        if (!item.fileUrl) continue;
+        
+        let extractedText: string | null = null;
+        if (item.fileUrl.toLowerCase().endsWith('.docx')) {
+          extractedText = await this.extractTextFromDocx(item.fileUrl);
+        } else if (item.fileUrl.toLowerCase().endsWith('.pdf')) {
+          extractedText = await this.extractTextFromPdf(item.fileUrl);
+        }
+
+        if (extractedText) {
+          await this.prisma.content.update({
+            where: { id: item.id },
+            data: { textContent: extractedText },
+          });
+          console.log(`Successfully extracted text for item: ${item.title}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error in re-extracting missing text:', error);
+    }
+  }
+
+  private async extractTextFromDocx(filePath: string): Promise<string | null> {
+    try {
+      const fullPath = path.join(process.cwd(), filePath);
+      if (!fs.existsSync(fullPath)) return null;
+
+      const result = await mammoth.extractRawText({ path: fullPath });
+      return result.value;
+    } catch (error) {
+      console.error('Error extracting text from docx:', error);
+      return null;
+    }
+  }
+
+  private async extractTextFromPdf(filePath: string): Promise<string | null> {
+    try {
+      const fullPath = path.join(process.cwd(), filePath);
+      if (!fs.existsSync(fullPath)) return null;
+
+      const dataBuffer = fs.readFileSync(fullPath);
+      const parser = new PDFParse({ data: dataBuffer });
+      const result = await parser.getText();
+      await parser.destroy();
+      return result.text;
+    } catch (error) {
+      console.error('Error extracting text from pdf:', error);
+      return null;
+    }
+  }
 
   async findAll(): Promise<Content[]> {
     return this.prisma.content.findMany({
@@ -54,8 +126,18 @@ export class ContentService {
       throw new BadRequestException(`User with id ${data.postedById} does not exist`);
     }
 
+    const contentData = {
+      ...data,
+      textContent:
+        data.fileUrl && data.fileUrl.toLowerCase().endsWith('.docx')
+          ? await this.extractTextFromDocx(data.fileUrl)
+          : data.fileUrl && data.fileUrl.toLowerCase().endsWith('.pdf')
+          ? await this.extractTextFromPdf(data.fileUrl)
+          : null,
+    };
+
     return this.prisma.content.create({
-      data,
+      data: contentData,
       include: { ageCategory: true, postedBy: true },
     });
   }
@@ -92,6 +174,16 @@ export class ContentService {
         // Log error but don't fail the update
         console.error('Error deleting old file:', error);
       }
+    }
+
+    // Extract text if fileUrl is being updated to a .docx or .pdf file
+    if (updates.fileUrl && updates.fileUrl.toLowerCase().endsWith('.docx')) {
+      updates.textContent = await this.extractTextFromDocx(updates.fileUrl);
+    } else if (updates.fileUrl && updates.fileUrl.toLowerCase().endsWith('.pdf')) {
+      updates.textContent = await this.extractTextFromPdf(updates.fileUrl);
+    } else if (updates.fileUrl) {
+      // If it's a new file but not docx/pdf, clear the textContent
+      updates.textContent = null;
     }
 
     // Remove oldFileUrl from updates if present (it's only for internal tracking)

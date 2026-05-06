@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import {
+  ActivityIndicator,
   Platform,
   ScrollView,
   StyleSheet,
@@ -21,12 +22,21 @@ export default function ParentHomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { userName } = useAuth();
-  const { allContent, ageCategories, getByAge } = useContent();
+  const { allContent, ageCategories, getByAge, isLoaded } = useContent();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   const recentContent = allContent.filter((c) => c.isNew).slice(0, 4);
   const displayCategories = ageCategories.length > 0 ? ageCategories : AGE_CATEGORIES;
+
+  if (!isLoaded) {
+    return (
+      <View style={[styles.loading, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>Biri gufunguka...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -194,4 +204,6 @@ const styles = StyleSheet.create({
   },
   newCardTitle: { fontSize: 13, fontFamily: "Inter_600SemiBold", lineHeight: 18 },
   newCardAge: { fontSize: 11, fontFamily: "Inter_500Medium" },
+  loading: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+  loadingText: { fontSize: 15, fontFamily: "Inter_500Medium" },
 });

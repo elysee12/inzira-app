@@ -38,6 +38,7 @@ CREATE TABLE `Content` (
     `type` ENUM('text', 'audio', 'video') NOT NULL,
     `duration` VARCHAR(191) NULL,
     `fileUrl` TEXT NULL,
+    `textContent` LONGTEXT NULL,
     `ageGroup` VARCHAR(191) NOT NULL,
     `postedById` INTEGER NOT NULL,
     `postedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),

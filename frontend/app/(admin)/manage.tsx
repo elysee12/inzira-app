@@ -18,10 +18,12 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppHeader } from "@/components/AppHeader";
+import { DocumentPreviewModal } from "@/components/DocumentPreviewModal";
 import { useContent } from "@/context/ContentContext";
 import { AGE_CATEGORIES, CONTENT_DATA } from "@/data/staticData";
 import type { AgeGroup, ContentItem } from "@/data/staticData";
 import { useColors } from "@/hooks/useColors";
+import { getImageUrl } from "@/context/apiClient";
 
 const ADMIN_COLOR = "#2980B9";
 const ALL_FILTER = "all";
@@ -52,6 +54,10 @@ export default function ManageScreen() {
   const [newFile, setNewFile] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState("");
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewTitle, setPreviewTitle] = useState("");
+  const [previewText, setPreviewText] = useState<string | undefined>(undefined);
 
   const filters = [
     { id: ALL_FILTER, label: "Byose" },
@@ -107,6 +113,13 @@ export default function ManageScreen() {
         { text: "Siba", style: "destructive", onPress: () => setNewFile(null) },
       ]
     );
+  };
+
+  const handlePreview = (url: string, title: string, text?: string) => {
+    setPreviewUrl(url);
+    setPreviewTitle(title);
+    setPreviewText(text);
+    setPreviewVisible(true);
   };
 
   const handleSaveEdit = async () => {
@@ -344,6 +357,15 @@ export default function ManageScreen() {
                         </Text>
                         <Text style={[styles.fileType, { color: colors.mutedForeground }]}>{editType}</Text>
                       </View>
+                      {editType === "text" && (
+                        <TouchableOpacity 
+                          onPress={() => handlePreview(getImageUrl(editingItem.fileUrl), editingItem.title, editingItem.textContent)}
+                          style={[styles.previewBadge, { backgroundColor: ADMIN_COLOR + "20" }]}
+                        >
+                          <Feather name="eye" size={14} color={ADMIN_COLOR} />
+                          <Text style={[styles.previewBadgeText, { color: ADMIN_COLOR }]}>Soma</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                   </View>
                 )}
@@ -356,9 +378,18 @@ export default function ManageScreen() {
                   {newFile ? (
                     <View style={[styles.selectedFileBox, { backgroundColor: "#EBF5FB", borderColor: ADMIN_COLOR }]}>
                       <Feather name="check-circle" size={18} color={ADMIN_COLOR} />
-                      <Text style={[styles.selectedFileName, { color: ADMIN_COLOR }]} numberOfLines={1}>
-                        {newFile.name}
-                      </Text>
+                      <View style={{ flex: 1, marginLeft: 8 }}>
+                        <Text style={[styles.selectedFileName, { color: ADMIN_COLOR }]} numberOfLines={1}>
+                          {newFile.name}
+                        </Text>
+                        {editType === "text" && (
+                          <TouchableOpacity onPress={() => handlePreview(newFile.uri, newFile.name)}>
+                            <Text style={{ fontSize: 11, color: ADMIN_COLOR, textDecorationLine: 'underline' }}>
+                              Kureba mbere yo kubika
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
                       <TouchableOpacity onPress={handleDeleteFile}>
                         <Feather name="x" size={18} color={ADMIN_COLOR} />
                       </TouchableOpacity>
@@ -403,6 +434,14 @@ export default function ManageScreen() {
           </KeyboardAvoidingView>
         </View>
       </Modal>
+
+      <DocumentPreviewModal
+          visible={previewVisible}
+          onClose={() => setPreviewVisible(false)}
+          fileUrl={previewUrl}
+          title={previewTitle}
+          textContent={previewText}
+        />
     </View>
   );
 }
@@ -462,12 +501,37 @@ const styles = StyleSheet.create({
   saveBtn: { flex: 1, flexDirection: "row", paddingVertical: 14, borderRadius: 12, alignItems: "center", justifyContent: "center", gap: 6 },
   saveBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#fff" },
   // File Management
-  fileDisplayRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  fileInfo: { flex: 1 },
-  fileName: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
-  fileType: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
-  selectedFileBox: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 10, borderWidth: 1.5, gap: 12 },
-  selectedFileName: { flex: 1, fontSize: 13, fontFamily: "Inter_600SemiBold" },
-  pickFileBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 12, borderRadius: 10, borderWidth: 1.5, gap: 8, borderStyle: "dashed" },
-  pickFileBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  fileDisplayRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  fileInfo: { flex: 1, gap: 2 },
+  fileName: { fontSize: 13, fontFamily: "Inter_500Medium" },
+  fileType: { fontSize: 11, fontFamily: "Inter_400Regular", textTransform: "capitalize" },
+  previewBadge: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 4, 
+    paddingHorizontal: 10, 
+    paddingVertical: 6, 
+    borderRadius: 8 
+  },
+  previewBadgeText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  selectedFileBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderStyle: "dashed",
+  },
+  selectedFileName: { fontSize: 13, fontFamily: "Inter_500Medium" },
+  pickFileBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    gap: 8,
+  },
+  pickFileBtnText: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
 });

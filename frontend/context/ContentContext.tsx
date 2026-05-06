@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import apiClient from "./apiClient";
 import type { AgeGroup, ContentItem, AgeCategory } from "@/data/staticData";
+import { AGE_CATEGORIES } from "@/data/staticData";
 
 interface ContentContextValue {
   allContent: ContentItem[];
@@ -20,7 +21,7 @@ const ContentContext = createContext<ContentContextValue | null>(null);
 
 export function ContentProvider({ children }: { children: React.ReactNode }) {
   const [allContent, setAllContent] = useState<ContentItem[]>([]);
-  const [ageCategories, setAgeCategories] = useState<AgeCategory[]>([]);
+  const [ageCategories, setAgeCategories] = useState<AgeCategory[]>(AGE_CATEGORIES);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const refreshContent = useCallback(async () => {
@@ -37,9 +38,11 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
       const response = await apiClient.get('age-categories');
       if (response.data && response.data.length > 0) {
         setAgeCategories(response.data);
+      } else {
+        setAgeCategories(AGE_CATEGORIES);
       }
     } catch (error) {
-      // Error handling suppressed
+      setAgeCategories(AGE_CATEGORIES);
     }
   }, []);
 
@@ -61,14 +64,16 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
       try {
         const formData = new FormData();
         Object.entries(item).forEach(([key, value]) => {
-          formData.append(key, value as string);
+          if (value !== null && value !== undefined) {
+            formData.append(key, value as string);
+          }
         });
         
         if (file) {
           formData.append('file', {
             uri: file.uri,
             name: file.name || 'upload',
-            type: file.mimeType || 'application/octet-stream',
+            type: file.mimeType || file.type || 'application/octet-stream',
           } as any);
         }
 
@@ -78,7 +83,8 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
           },
         });
         await refreshContent();
-      } catch (error) {
+      } catch (error: any) {
+        console.error("Add content error:", error.response?.data || error.message);
         throw error;
       }
     },
@@ -108,7 +114,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
           formData.append('file', {
             uri: file.uri,
             name: file.name || 'upload',
-            type: file.mimeType || 'application/octet-stream',
+            type: file.mimeType || file.type || 'application/octet-stream',
           } as any);
           
           await apiClient.patch(`content/${id}`, formData, {
@@ -122,6 +128,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
         await refreshContent();
         return { success: true };
       } catch (error: any) {
+        console.error("Edit content error:", error.response?.data || error.message);
         return { success: false, error: error.message || "Guhindura isomo ntibyashobotse." };
       }
     },
@@ -133,7 +140,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
       try {
         const formData = new FormData();
         Object.entries(updates).forEach(([key, value]) => {
-          if (value !== undefined) {
+          if (value !== undefined && value !== null) {
             formData.append(key, value as string);
           }
         });
@@ -142,7 +149,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
           formData.append('image', {
             uri: image.uri,
             name: image.name || 'category-image',
-            type: image.mimeType || 'image/jpeg',
+            type: image.mimeType || image.type || 'image/jpeg',
           } as any);
         }
 
@@ -154,6 +161,7 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
         await refreshAgeCategories();
         return { success: true };
       } catch (error: any) {
+        console.error("Edit category error:", error.response?.data || error.message);
         return { success: false, error: error.message || "Guhindura ikiciro cy'umwana ntibyashobotse." };
       }
     },

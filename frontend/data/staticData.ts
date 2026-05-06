@@ -5,6 +5,7 @@ export interface ContentItem {
   type: "text" | "audio" | "video";
   duration?: string;
   fileUrl?: string;
+  textContent?: string;
   ageGroup: AgeGroup;
   postedBy: string;
   postedAt: string;

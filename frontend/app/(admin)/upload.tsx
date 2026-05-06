@@ -14,6 +14,7 @@ import {
 } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
+import { DocumentPreviewModal } from "@/components/DocumentPreviewModal";
 import { useContent } from "@/context/ContentContext";
 import { AGE_CATEGORIES } from "@/data/staticData";
 import type { AgeGroup } from "@/data/staticData";
@@ -36,6 +37,7 @@ export default function UploadScreen() {
   const [duration, setDuration] = useState("");
   const [selectedFile, setSelectedFile] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
 
   const displayCategories = ageCategories.length > 0 ? ageCategories : AGE_CATEGORIES;
 
@@ -44,6 +46,12 @@ export default function UploadScreen() {
     { type: "audio", icon: "headphones", label: "Audio" },
     { type: "video", icon: "play-circle", label: "Video" },
   ];
+
+  const handlePreview = () => {
+    if (selectedFile) {
+      setPreviewVisible(true);
+    }
+  };
 
   const pickDocument = async () => {
     try {
@@ -66,6 +74,11 @@ export default function UploadScreen() {
       Alert.alert("Ikibazo", "Uzuza amakuru yose asabwa: umutwe, ikiciro cy'umwana n'idosiye.");
       return;
     }
+
+    if (!userId) {
+      Alert.alert("Ikibazo", "Ntabwo winjiye neza. Sura umwirondoro maze winjire nanone.");
+      return;
+    }
     
     setUploading(true);
     try {
@@ -75,7 +88,7 @@ export default function UploadScreen() {
         type: selectedType,
         ageGroup: selectedAge,
         postedBy: userName || "Umuyobozi",
-        postedById: userId || "1",
+        postedById: userId,
         duration: duration.trim() ? `${duration.trim()} ${selectedType === "text" ? "Amezi" : "Iminota"}` : "",
       }, selectedFile);
 
@@ -86,9 +99,10 @@ export default function UploadScreen() {
       setDuration("");
       setSelectedFile(null);
       Alert.alert("Byagenze!", "Isomo ryongewe neza kandi ababyeyi barashobora kurireba.");
-    } catch (error) {
+    } catch (error: any) {
       setUploading(false);
-      Alert.alert("Ikibazo", "Isomo ntibyashobotse kuribika. Gerageza nanone.");
+      const errorMsg = error.response?.data?.message || "Isomo ntibyashobotse kuribika. Gerageza nanone.";
+      Alert.alert("Ikibazo", errorMsg);
     }
   };
 
@@ -222,25 +236,49 @@ export default function UploadScreen() {
             </View>
           </View>
 
-          <TouchableOpacity 
-            onPress={pickDocument}
-            activeOpacity={0.7}
-            style={[styles.uploadBox, { borderColor: ADMIN_COLOR + "50", backgroundColor: "#EBF5FB" }]}
-          >
-            <Feather name={selectedFile ? "check-circle" : "upload-cloud"} size={36} color={selectedFile ? "#1A8A3A" : ADMIN_COLOR} />
-            <Text style={[styles.uploadBoxText, { color: selectedFile ? "#1A8A3A" : ADMIN_COLOR }]}>
-              {selectedFile ? selectedFile.name : (
-                selectedType === "text"
-                ? "Dosiye ya PDF / Word"
-                : selectedType === "audio"
-                ? "Dosiye ya MP3 / WAV"
-                : "Dosiye ya MP4 / MOV"
-              )}
+          <View style={styles.section}>
+            <Text style={[styles.label, { color: colors.foreground }]}>
+              Dosiye <Text style={{ color: "#ef4444" }}>*</Text>
             </Text>
-            <Text style={[styles.uploadBoxSub, { color: colors.mutedForeground }]}>
-              Porogaramu ibika dosiye zibitswe ku rubuga. Kanda kugira ngo uhitemo.
-            </Text>
-          </TouchableOpacity>
+            {selectedFile ? (
+              <View style={[styles.uploadBox, { borderColor: "#1A8A3A", backgroundColor: "#F0F9F1", flexDirection: 'row', paddingVertical: 16 }]}>
+                <Feather name="check-circle" size={24} color="#1A8A3A" />
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={[styles.uploadBoxText, { color: "#1A8A3A", textAlign: 'left' }]} numberOfLines={1}>
+                    {selectedFile.name}
+                  </Text>
+                  {selectedType === "text" && (
+                    <TouchableOpacity onPress={handlePreview}>
+                      <Text style={{ color: ADMIN_COLOR, fontSize: 12, fontFamily: "Inter_600SemiBold", textDecorationLine: 'underline' }}>
+                        Kureba mbere yo kubika (Preview)
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <TouchableOpacity onPress={() => setSelectedFile(null)}>
+                  <Feather name="x-circle" size={24} color="#ef4444" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity 
+                onPress={pickDocument}
+                activeOpacity={0.7}
+                style={[styles.uploadBox, { borderColor: ADMIN_COLOR + "50", backgroundColor: "#EBF5FB" }]}
+              >
+                <Feather name="upload-cloud" size={36} color={ADMIN_COLOR} />
+                <Text style={[styles.uploadBoxText, { color: ADMIN_COLOR }]}>
+                  {selectedType === "text"
+                    ? "Dosiye ya PDF / Word"
+                    : selectedType === "audio"
+                    ? "Dosiye ya MP3 / WAV"
+                    : "Dosiye ya MP4 / MOV"}
+                </Text>
+                <Text style={[styles.uploadBoxSub, { color: colors.mutedForeground }]}>
+                  Porogaramu ibika dosiye zibitswe ku rubuga. Kanda kugira ngo uhitemo.
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           <TouchableOpacity
             style={[
@@ -286,6 +324,15 @@ export default function UploadScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {selectedFile && (
+        <DocumentPreviewModal
+          visible={previewVisible}
+          onClose={() => setPreviewVisible(false)}
+          fileUrl={selectedFile.uri}
+          title={selectedFile.name}
+        />
+      )}
     </View>
   );
 }

@@ -45,6 +45,7 @@ model Content {
   type          ContentType
   duration      String?
   fileUrl       String?     @db.Text
+  textContent   String?     @db.LongText
   ageGroup      String
   ageCategory   AgeCategory @relation(fields: [ageGroup], references: [id])
   postedById    Int

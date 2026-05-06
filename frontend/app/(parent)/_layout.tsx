@@ -64,11 +64,15 @@ export default function ParentLayout() {
       />
       <Tabs.Screen
         name="age-group/[id]"
-        options={{ href: null }}
+        options={{ 
+          href: null 
+        }}
       />
       <Tabs.Screen
         name="content/[id]"
-        options={{ href: null }}
+        options={{ 
+          href: null 
+        }}
       />
     </Tabs>
   );

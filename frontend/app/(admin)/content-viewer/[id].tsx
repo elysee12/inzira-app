@@ -15,7 +15,10 @@ import WebView from "react-native-webview";
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 
+import * as WebBrowser from 'expo-web-browser';
+
 import { AppHeader } from "@/components/AppHeader";
+import { DocumentPreviewModal } from "@/components/DocumentPreviewModal";
 import { useContent } from "@/context/ContentContext";
 import { getImageUrl, BASE_URL } from "@/context/apiClient";
 import { useColors } from "@/hooks/useColors";
@@ -31,6 +34,7 @@ export default function AdminContentViewerScreen() {
   const { allContent } = useContent();
   const [contentItem, setContentItem] = useState<ContentItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [previewVisible, setPreviewVisible] = useState(false);
 
   useEffect(() => {
     if (id && allContent.length > 0) {
@@ -73,6 +77,12 @@ export default function AdminContentViewerScreen() {
   const openDocument = async () => {
     if (!fileUrl) return;
     try {
+      // For local development on Android, WebBrowser is better than downloading
+      if (Platform.OS === 'android' && isLocalUrl) {
+        await WebBrowser.openBrowserAsync(fileUrl);
+        return;
+      }
+
       setLoading(true);
       const filename = fileUrl.split('/').pop() || 'document.pdf';
       const fileUri = `${FileSystem.documentDirectory}${filename}`;
@@ -95,51 +105,22 @@ export default function AdminContentViewerScreen() {
     switch (contentItem.type) {
       case "text":
         if (fileUrl) {
-          // iOS can render PDFs directly in WebView
-          if (Platform.OS === 'ios' && fileUrl.toLowerCase().endsWith('.pdf')) {
-            return (
-              <WebView
-                style={styles.webview}
-                source={{ uri: fileUrl }}
-                startInLoadingState={true}
-              />
-            );
-          }
-
-          // For Android or other cases, use Google Docs Viewer if NOT a local URL
-          if (!isLocalUrl) {
-            return (
-              <WebView
-                style={styles.webview}
-                source={{ uri: `https://docs.google.com/gview?embedded=true&url=${fileUrl}` }}
-                javaScriptEnabled={true}
-                domStorageEnabled={true}
-                startInLoadingState={true}
-                renderLoading={() => (
-                  <View style={styles.loadingOverlay}>
-                    <ActivityIndicator size="large" color={ADMIN_COLOR} />
-                    <Text style={{ color: colors.mutedForeground, marginTop: 10 }}>
-                      Birimo gupakira inyandiko...
-                    </Text>
-                  </View>
-                )}
-              />
-            );
-          }
-
-          // Local URL Fallback for Android (since Google Docs Viewer can't see local IPs)
           return (
             <View style={styles.localFallback}>
-              <Feather name="file-text" size={60} color={ADMIN_COLOR} />
+              <Feather 
+                name={fileUrl.toLowerCase().endsWith('.pdf') ? "file-text" : "file"} 
+                size={60} 
+                color={ADMIN_COLOR} 
+              />
               <Text style={[styles.localFallbackText, { color: colors.foreground }]}>
-                Inyandiko iri kuri network yawe (Local).
+                Inyandiko ya {fileUrl.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Word'}
               </Text>
-              <Text style={[styles.localFallbackSub, { color: colors.mutedForeground }]}>
-                Kanda hano kugira ngo uyifungure neza:
-              </Text>
-              <TouchableOpacity style={[styles.openBtn, { backgroundColor: ADMIN_COLOR }]} onPress={openDocument}>
-                <Feather name="external-link" size={20} color="#fff" />
-                <Text style={styles.openBtnText}>Fungura Inyandiko</Text>
+              <TouchableOpacity 
+                style={[styles.openBtn, { backgroundColor: ADMIN_COLOR }]} 
+                onPress={() => setPreviewVisible(true)}
+              >
+                <Feather name="eye" size={20} color="#fff" />
+                <Text style={styles.openBtnText}>Soma Inyandiko (Embedded)</Text>
               </TouchableOpacity>
             </View>
           );
@@ -191,6 +172,16 @@ export default function AdminContentViewerScreen() {
           </View>
         )}
       </ScrollView>
+
+      {fileUrl && (
+        <DocumentPreviewModal
+          visible={previewVisible}
+          onClose={() => setPreviewVisible(false)}
+          fileUrl={fileUrl}
+          title={contentItem.title}
+          textContent={contentItem.textContent}
+        />
+      )}
     </View>
   );
 }

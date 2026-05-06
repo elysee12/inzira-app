@@ -30,8 +30,9 @@ export class AgeCategoryController {
     }),
   }))
   async create(@Body() data: any, @UploadedFile() file?: Express.Multer.File): Promise<AgeCategory> {
+    const { image, ...rest } = data;
     const categoryData = {
-      ...data,
+      ...rest,
       imageUrl: file ? `/uploads/categories/${file.filename}` : data.imageUrl,
     };
     return this.ageCategoryService.create(categoryData);
@@ -52,7 +53,8 @@ export class AgeCategoryController {
     @Body() data: any,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<AgeCategory> {
-    const updates: any = { ...data };
+    const { image, ...rest } = data;
+    const updates: any = { ...rest };
     if (file) {
       updates.imageUrl = `/uploads/categories/${file.filename}`;
     }
