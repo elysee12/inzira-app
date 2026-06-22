@@ -56,6 +56,13 @@ export default function ParentLayout() {
         }}
       />
       <Tabs.Screen
+        name="chat"
+        options={{
+          title: "Ubutumwa",
+          tabBarIcon: ({ color }) => <Feather name="message-circle" size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Umwirondoro",
@@ -72,6 +79,13 @@ export default function ParentLayout() {
         name="content/[id]"
         options={{ 
           href: null 
+        }}
+      />
+      <Tabs.Screen
+        name="chat-conversation/[userId]"
+        options={{ 
+          href: null,
+          tabBarStyle: { display: 'none' }
         }}
       />
     </Tabs>

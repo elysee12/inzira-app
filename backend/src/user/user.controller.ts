@@ -36,6 +36,11 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @Get(':id')
+  async findById(@Param('id', ParseIntPipe) id: number): Promise<UserPublic> {
+    return this.userService.findById(id);
+  }
+
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -47,5 +52,10 @@ export class UserController {
   @Delete(':id')
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.userService.delete(id);
+  }
+
+  @Get(':id/chw')
+  async getAssignedCHW(@Param('id', ParseIntPipe) id: number): Promise<any> {
+    return this.userService.getAssignedCHW(id);
   }
 }

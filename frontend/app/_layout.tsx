@@ -18,7 +18,11 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ContentProvider } from "@/context/ContentContext";
 
 // Suppress console error overlays - show only custom Alerts
-LogBox.ignoreLogs(['Non-serializable values']);
+LogBox.ignoreLogs([
+  'Non-serializable values',
+  'Unable to activate keep awake',
+  'expo-av has been deprecated',
+]);
 
 SplashScreen.preventAutoHideAsync();
 
@@ -36,6 +40,7 @@ function RootLayoutNav() {
       <Stack.Screen name="auth/reset-password" />
       <Stack.Screen name="(parent)" />
       <Stack.Screen name="(admin)" />
+      <Stack.Screen name="(chw)" />
     </Stack>
   );
 }

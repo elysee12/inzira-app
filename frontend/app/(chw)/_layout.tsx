@@ -7,9 +7,9 @@ import { useColorScheme } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
 
-const ADMIN_COLOR = "#2980B9";
+const CHW_COLOR = "#16A34A";
 
-export default function AdminLayout() {
+export default function CHWLayout() {
   const colors = useColors();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -19,7 +19,7 @@ export default function AdminLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: ADMIN_COLOR,
+        tabBarActiveTintColor: CHW_COLOR,
         tabBarInactiveTintColor: colors.mutedForeground,
         headerShown: false,
         tabBarStyle: {
@@ -43,24 +43,31 @@ export default function AdminLayout() {
       }}
     >
       <Tabs.Screen
-        name="dashboard"
+        name="home"
         options={{
-          title: "System",
-          tabBarIcon: ({ color }) => <Feather name="grid" size={22} color={color} />,
+          title: "Ahabanza",
+          tabBarIcon: ({ color }) => <Feather name="home" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="upload"
+        name="lessons"
         options={{
-          title: "Ongeraho",
-          tabBarIcon: ({ color }) => <Feather name="plus-circle" size={22} color={color} />,
+          title: "Amasomo",
+          tabBarIcon: ({ color }) => <Feather name="book-open" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="manage"
+        name="parents"
         options={{
-          title: "Genzura",
-          tabBarIcon: ({ color }) => <Feather name="list" size={22} color={color} />,
+          title: "Ababyeyi",
+          tabBarIcon: ({ color }) => <Feather name="users" size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: "Ubutumwa",
+          tabBarIcon: ({ color}) => <Feather name="message-circle" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -71,29 +78,22 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
-        name="manage-categories"
-        options={{
-          title: "Ikiciro",
-          tabBarIcon: ({ color }) => <Feather name="settings" size={22} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="manage-chw"
-        options={{
-          title: "CHW",
-          tabBarIcon: ({ color }) => <Feather name="users" size={22} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="age-content/[id]"
+        name="age-group/[id]"
         options={{ 
           href: null 
         }}
       />
       <Tabs.Screen
-        name="content-viewer/[id]"
+        name="content/[id]"
         options={{ 
           href: null 
+        }}
+      />
+      <Tabs.Screen
+        name="chat-conversation/[userId]"
+        options={{ 
+          href: null,
+          tabBarStyle: { display: 'none' }
         }}
       />
     </Tabs>

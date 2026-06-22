@@ -2,12 +2,12 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
-// Use Render URL for production
+// // Use Render URL for production
 // export const BASE_URL = 'https://inzira-app.onrender.com';
 // export const API_URL = `${BASE_URL}/api`;
 
 // Local testing IP (from your ipconfig)
-const LOCAL_IP = '10.202.102.24';
+const LOCAL_IP = '192.168.0.108';
 export const BASE_URL = `http://${LOCAL_IP}:3000`;
 export const API_URL = `${BASE_URL}/api`;
 

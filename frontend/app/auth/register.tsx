@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import LocationPicker from "@/components/LocationPicker";
 
 export default function RegisterScreen() {
   const colors = useColors();
@@ -34,17 +35,25 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [location, setLocation] = useState({
+    province: "",
+    district: "",
+    sector: "",
+    cell: "",
+    village: "",
+  });
 
   const handleRegister = async () => {
     setError("");
     if (!name.trim()) { Alert.alert("Ikitonderwa", "Injiza izina ryawe ryuzuye."); return; }
     if (!phone.trim() || phone.trim().length < 10) { Alert.alert("Ikitonderwa", "Injiza nimero ya telefoni yuzuye."); return; }
     if (!email.trim() || !email.includes("@")) { Alert.alert("Ikitonderwa", "Injiza imeli yuzuye kandi igenga neza."); return; }
+    if (!location.village) { Alert.alert("Ikitonderwa", "Hitamo aho utuye (Intara → Umudugudu)."); return; }
     if (password.length < 6) { Alert.alert("Ikitonderwa", "Ijambo ry'ibanga rigomba kuba rifite inyuguti nibura 6."); return; }
     if (password !== confirmPassword) { Alert.alert("Ikitonderwa", "Amagambo y'ibanga ntahura. Gerageza nanone."); return; }
 
     setLoading(true);
-    const result = await register(name.trim(), phone.trim(), email.trim(), password);
+    const result = await register(name.trim(), phone.trim(), email.trim(), password, location);
     setLoading(false);
 
     if (result.success) {
@@ -170,6 +179,18 @@ export default function RegisterScreen() {
 
           <View style={styles.fieldGroup}>
             <Text style={[styles.label, { color: colors.foreground }]}>
+              Aho utuye <Text style={{ color: "#ef4444" }}>*</Text>
+            </Text>
+            <View style={[styles.locationBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <LocationPicker value={location} onChange={setLocation} />
+            </View>
+            <Text style={[styles.fieldHint, { color: colors.mutedForeground }]}>
+              Hitamo intara, akarere, umurenge, akagari n'umudugudu aho utuye.
+            </Text>
+          </View>
+
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.label, { color: colors.foreground }]}>
               Ijambo ry'ibanga <Text style={{ color: "#ef4444" }}>*</Text>
             </Text>
             <View style={[styles.inputWrap, { borderColor: colors.border, backgroundColor: colors.card }]}>
@@ -290,6 +311,11 @@ const styles = StyleSheet.create({
   registerBtnText: { fontSize: 16, fontFamily: "Inter_600SemiBold", color: "#fff" },
   loginLink: { alignSelf: "center" },
   loginLinkText: { fontSize: 14, fontFamily: "Inter_400Regular" },
+  locationBox: {
+    borderRadius: 12,
+    borderWidth: 1.5,
+    padding: 16,
+  },
   successWrap: { flex: 1, alignItems: "center", paddingHorizontal: 32, gap: 20 },
   successCircle: { width: 96, height: 96, borderRadius: 48, alignItems: "center", justifyContent: "center" },
   successTitle: { fontSize: 26, fontFamily: "Inter_700Bold", textAlign: "center" },

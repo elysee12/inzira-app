@@ -15,6 +15,8 @@ export default function IndexScreen() {
       router.replace("/(admin)/dashboard");
     } else if (role === "parent") {
       router.replace("/(parent)/home");
+    } else if (role === "chw") {
+      router.replace("/(chw)/home");
     } else {
       router.replace("/onboarding");
     }

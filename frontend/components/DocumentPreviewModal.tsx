@@ -152,29 +152,36 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
       );
     }
   
-    // 1. PDF Embedding (WebView)
+    // 1. PDF handling - always use either:
+    // - Download + Share for local files
+    // - Google Docs for public
     if (isPdfDoc) {
-      const googleViewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(fileUrl)}`;
-      
       return (
-        <WebView
-          source={{ uri: googleViewerUrl }}
-          style={styles.pdf}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          renderLoading={() => (
-            <View style={styles.loading}>
-              <ActivityIndicator size="large" color={ADMIN_COLOR} />
-              <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>
-                Birimo gufungura PDF...
-              </Text>
-            </View>
-          )}
-          onError={(syntheticEvent) => {
-            console.error('WebView error:', syntheticEvent.nativeEvent);
-          }}
-        />
+        <View style={styles.fallback}>
+          <Feather name="file-text" size={80} color={ADMIN_COLOR} />
+          <Text style={[styles.fallbackText, { color: colors.foreground }]}>
+            Inyandiko ya PDF
+          </Text>
+          <Text style={[styles.fallbackSub, { color: colors.mutedForeground, marginHorizontal: 20, marginBottom: 10 }]}>
+            Kanda hanyuma ubyandikire cyangwa ubice:
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <TouchableOpacity 
+              style={[styles.openBtn, { backgroundColor: ADMIN_COLOR }]} 
+              onPress={handleDownloadAndOpen}
+            >
+              <Feather name="download" size={18} color="#fff" />
+              <Text style={styles.openBtnText}>Gutora</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.openBtn, { backgroundColor: '#555' }]} 
+              onPress={handleOpenExternal}
+            >
+              <Feather name="external-link" size={18} color="#fff" />
+              <Text style={styles.openBtnText}>Fungura</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       );
     }
 
@@ -210,17 +217,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
       );
     }
 
-    // 4. Web PDF fallback
-    if (Platform.OS === 'web' && isPdfDoc) {
-      return (
-        <WebView
-          source={{ uri: fileUrl }}
-          style={styles.webview}
-        />
-      );
-    }
-
-    // 5. Fallback for Local files (especially Word on Android where we can't embed)
+    // 4. Fallback for Local files (especially Word on Android where we can't embed)
     if (isLocalUrl) {
       return (
         <View style={styles.fallback}>

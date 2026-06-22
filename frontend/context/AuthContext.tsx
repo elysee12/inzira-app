@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import apiClient from "./apiClient";
 
-export type UserRole = "admin" | "parent";
+export type UserRole = "admin" | "parent" | "chw";
 
 export interface UserAccount {
   name: string;
@@ -11,6 +11,11 @@ export interface UserAccount {
   email: string;
   password?: string;
   role: UserRole;
+  province?: string;
+  district?: string;
+  sector?: string;
+  cell?: string;
+  village?: string;
 }
 
 interface AuthState {
@@ -23,7 +28,7 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
-  register: (name: string, phone: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (name: string, phone: string, email: string, password: string, location?: { province: string; district: string; sector: string; cell: string; village: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   findUserByEmail: (email: string) => Promise<UserAccount | null>;
   resetPassword: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
@@ -111,16 +116,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const register = useCallback(async (
-    name: string, phone: string, email: string, password: string
+    name: string, phone: string, email: string, password: string, location?: { province: string; district: string; sector: string; cell: string; village: string }
   ): Promise<{ success: boolean; error?: string }> => {
     try {
-      await apiClient.post('/auth/register', { 
+      const payload: any = { 
         name, 
         phone,
         email, 
         password,
         role: "PARENT"
-      });
+      };
+      
+      if (location) {
+        payload.province = location.province;
+        payload.district = location.district;
+        payload.sector = location.sector;
+        payload.cell = location.cell;
+        payload.village = location.village;
+      }
+      
+      await apiClient.post('/auth/register', payload);
       return { success: true };
     } catch (error: any) {
       if (error.response?.status === 400) {

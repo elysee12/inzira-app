@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -17,17 +17,41 @@ import { useAuth } from "@/context/AuthContext";
 import { useContent } from "@/context/ContentContext";
 import { useColors } from "@/hooks/useColors";
 import { AgeCategoryCard } from "@/components/AgeCategoryCard";
+import apiClient from "@/context/apiClient";
 
 export default function ParentHomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { userName } = useAuth();
+  const { userName, userId } = useAuth();
   const { allContent, ageCategories, getByAge, isLoaded } = useContent();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+  
+  const [chw, setChw] = useState<any>(null);
+  const [chwLoading, setChwLoading] = useState(true);
 
   const recentContent = allContent.filter((c) => c.isNew).slice(0, 4);
   const displayCategories = ageCategories.length > 0 ? ageCategories : AGE_CATEGORIES;
+  
+  useEffect(() => {
+    // Fetch assigned CHW
+    const fetchCHW = async () => {
+      try {
+        const response = await apiClient.get(`/users/${userId}/chw`);
+        if (response.data) {
+          setChw(response.data);
+        }
+      } catch (error) {
+        console.log('No CHW assigned or error fetching CHW');
+      } finally {
+        setChwLoading(false);
+      }
+    };
+    
+    if (userId) {
+      fetchCHW();
+    }
+  }, [userId]);
 
   if (!isLoaded) {
     return (
@@ -65,6 +89,30 @@ export default function ParentHomeScreen() {
       </View>
 
       <View style={styles.content}>
+        {!chwLoading && chw && (
+          <TouchableOpacity
+            style={[styles.chwCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+            onPress={() => router.push({ pathname: "/(parent)/chat-conversation/[userId]", params: { userId: chw.id } })}
+            activeOpacity={0.85}
+          >
+            <View style={[styles.chwIconWrap, { backgroundColor: '#E8F5EC' }]}>
+              <Feather name="message-circle" size={24} color={colors.primary} />
+            </View>
+            <View style={styles.chwInfo}>
+              <Text style={[styles.chwTitle, { color: colors.foreground }]}>
+                Ganira n'Umukozi w'Ubuzima
+              </Text>
+              <Text style={[styles.chwName, { color: colors.primary }]}>
+                {chw.name}
+              </Text>
+              <Text style={[styles.chwVillage, { color: colors.mutedForeground }]}>
+                {chw.village}
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={20} color={colors.mutedForeground} />
+          </TouchableOpacity>
+        )}
+
         {recentContent.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -206,4 +254,24 @@ const styles = StyleSheet.create({
   newCardAge: { fontSize: 11, fontFamily: "Inter_500Medium" },
   loading: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
   loadingText: { fontSize: 15, fontFamily: "Inter_500Medium" },
+  chwCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 14,
+    marginBottom: 8,
+  },
+  chwIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  chwInfo: { flex: 1, gap: 4 },
+  chwTitle: { fontSize: 12, fontFamily: "Inter_500Medium" },
+  chwName: { fontSize: 16, fontFamily: "Inter_700Bold" },
+  chwVillage: { fontSize: 12, fontFamily: "Inter_400Regular" },
 });

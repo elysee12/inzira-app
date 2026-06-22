@@ -20,7 +20,9 @@ import { useColors } from "@/hooks/useColors";
 
 type ModalType = null | "profile" | "notifications" | "language" | "guidelines" | "help" | "edit_profile";
 
-export default function ParentProfileScreen() {
+const CHW_COLOR = "#16A34A";
+
+export default function CHWProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { userName, userPhone, logout, updateUser } = useAuth();
@@ -28,7 +30,7 @@ export default function ParentProfileScreen() {
 
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [notifEnabled, setNotifEnabled] = useState(true);
-  const [lessonNotif, setLessonNotif] = useState(true);
+  const [messageNotif, setMessageNotif] = useState(true);
   const [tipNotif, setTipNotif] = useState(false);
 
   // Edit Profile State
@@ -93,7 +95,7 @@ export default function ParentProfileScreen() {
   };
 
   const menuItems = [
-    { icon: "user", label: "Umwirondoro wanjye", sublabel: userName || "Umubyeyi", modal: "profile" as ModalType },
+    { icon: "user", label: "Umwirondoro wanjye", sublabel: userName || "CHW", modal: "profile" as ModalType },
     { icon: "bell", label: "Amatangazo", sublabel: notifEnabled ? "Byifunguye" : "Bifunzwe", modal: "notifications" as ModalType },
     { icon: "globe", label: "Ururimi", sublabel: "Ikinyarwanda", modal: "language" as ModalType },
     { icon: "shield", label: "Amabwiriza y'ubuzima", sublabel: "Soma amabwiriza", modal: "guidelines" as ModalType },
@@ -106,21 +108,21 @@ export default function ParentProfileScreen() {
         return (
           <>
             <View style={[styles.infoCard, { backgroundColor: colors.secondary }]}>
-              <View style={[styles.bigAvatar, { backgroundColor: colors.primary }]}>
-                <Text style={styles.bigAvatarText}>{userName ? userName[0].toUpperCase() : "U"}</Text>
+              <View style={[styles.bigAvatar, { backgroundColor: CHW_COLOR }]}>
+                <Text style={styles.bigAvatarText}>{userName ? userName[0].toUpperCase() : "C"}</Text>
               </View>
-              <Text style={[styles.infoName, { color: colors.foreground }]}>{userName || "Umubyeyi"}</Text>
-              <View style={[styles.rolePill, { backgroundColor: colors.primary + "20" }]}>
-                <Feather name="users" size={12} color={colors.primary} />
-                <Text style={[styles.rolePillText, { color: colors.primary }]}>Umubyeyi</Text>
+              <Text style={[styles.infoName, { color: colors.foreground }]}>{userName || "CHW"}</Text>
+              <View style={[styles.rolePill, { backgroundColor: CHW_COLOR + "20" }]}>
+                <Feather name="heart" size={12} color={CHW_COLOR} />
+                <Text style={[styles.rolePillText, { color: CHW_COLOR }]}>Umukozi w'Ubuzima</Text>
               </View>
             </View>
-            <InfoRow icon="phone" label="Telefoni" value={userPhone || "N/A"} colors={colors} />
-            <InfoRow icon="calendar" label="Yiyandikishije" value="Mutarama 2025" colors={colors} />
-            <InfoRow icon="book-open" label="Amasomo Yasomye" value="3 amasomo" colors={colors} />
+            <InfoRow icon="phone" label="Telefoni" value={userPhone || "N/A"} colors={colors} accentColor={CHW_COLOR} />
+            <InfoRow icon="calendar" label="Yiyandikishije" value="Mutarama 2025" colors={colors} accentColor={CHW_COLOR} />
+            <InfoRow icon="users" label="Ababyeyi Bakurikirana" value="Reba paji y'ababyeyi" colors={colors} accentColor={CHW_COLOR} />
             
             <TouchableOpacity 
-              style={[styles.editBtn, { backgroundColor: colors.primary }]} 
+              style={[styles.editBtn, { backgroundColor: CHW_COLOR }]} 
               onPress={() => setActiveModal("edit_profile")}
             >
               <Feather name="edit-2" size={16} color="#fff" />
@@ -130,7 +132,7 @@ export default function ParentProfileScreen() {
             <View style={[styles.infoHint, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
               <Feather name="info" size={13} color={colors.mutedForeground} />
               <Text style={[styles.infoHintText, { color: colors.mutedForeground }]}>
-                Kugira ngo uhindure amakuru yawe, twandikire kuri support@imirire.rw.
+                Nk'umukozi w'ubuzima, ufite inshingano zo gufasha ababyeyi mu mudugudu wawe.
               </Text>
             </View>
           </>
@@ -148,15 +150,15 @@ export default function ParentProfileScreen() {
               value={notifEnabled}
               onChange={setNotifEnabled}
               colors={colors}
-              accentColor={colors.primary}
+              accentColor={CHW_COLOR}
             />
             <SettingToggle
-              label="Amasomo Mashya"
-              sublabel="Menya iyo isomo rishya ryashyizwe"
-              value={lessonNotif}
-              onChange={setLessonNotif}
+              label="Ubutumwa Bushya"
+              sublabel="Menya iyo ubutumwa bushya bugukeye"
+              value={messageNotif}
+              onChange={setMessageNotif}
               colors={colors}
-              accentColor={colors.primary}
+              accentColor={CHW_COLOR}
             />
             <SettingToggle
               label="Inama z'Imirire"
@@ -164,7 +166,7 @@ export default function ParentProfileScreen() {
               value={tipNotif}
               onChange={setTipNotif}
               colors={colors}
-              accentColor={colors.primary}
+              accentColor={CHW_COLOR}
             />
             <View style={[styles.infoHint, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
               <Feather name="bell" size={13} color={colors.mutedForeground} />
@@ -191,8 +193,8 @@ export default function ParentProfileScreen() {
                 style={[
                   styles.langOption,
                   {
-                    backgroundColor: lang.code === "rw" ? colors.primary + "15" : colors.card,
-                    borderColor: lang.code === "rw" ? colors.primary : colors.border,
+                    backgroundColor: lang.code === "rw" ? CHW_COLOR + "15" : colors.card,
+                    borderColor: lang.code === "rw" ? CHW_COLOR : colors.border,
                     opacity: lang.available ? 1 : 0.5,
                   },
                 ]}
@@ -204,7 +206,7 @@ export default function ParentProfileScreen() {
                   <Text style={[styles.langNative, { color: colors.mutedForeground }]}>{lang.native}</Text>
                 </View>
                 {lang.code === "rw" ? (
-                  <View style={[styles.checkCircle, { backgroundColor: colors.primary }]}>
+                  <View style={[styles.checkCircle, { backgroundColor: CHW_COLOR }]}>
                     <Feather name="check" size={14} color="#fff" />
                   </View>
                 ) : (
@@ -242,14 +244,14 @@ export default function ParentProfileScreen() {
                 body: "Gira ngo umwana arabanye n'ibiro n'uburebure buhuje n'imyaka ye. Jya ufata umwana ku muganga ku myaka itandukanye.",
               },
               {
-                icon: "alert-triangle",
-                title: "Ibiryo bibujijwe",
-                body: "Irinda guha umwana w'amezi 0-6 amazi, isupu, cyangwa ibindi binyobwa. Amata ya nyina asumba byose.",
+                icon: "users",
+                title: "Gufasha Ababyeyi",
+                body: "Nk'umukozi w'ubuzima, fasha ababyeyi gusobanukirwa neza aya mabwiriza. Subiza ibibazo byabo kandi ubafashe mu buryo bwiza.",
               },
             ].map((g, i) => (
               <View key={i} style={[styles.guideCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={[styles.guideIconWrap, { backgroundColor: colors.primary + "15" }]}>
-                  <Feather name={g.icon as any} size={20} color={colors.primary} />
+                <View style={[styles.guideIconWrap, { backgroundColor: CHW_COLOR + "15" }]}>
+                  <Feather name={g.icon as any} size={20} color={CHW_COLOR} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.guideTitle, { color: colors.foreground }]}>{g.title}</Text>
@@ -269,24 +271,24 @@ export default function ParentProfileScreen() {
               colors={colors}
             />
             <FaqItem
-              q="Amakuru y'umwana bari hehe?"
-              a="Inyigisho zose zirashingiye ku myaka y'umwana wawe. Hitamo ikiciro cy'umwana kuri paji ya 'Ahabanza'."
+              q="Ndabona nte ababyeyi banjye?"
+              a="Kanda kuri paji 'Ababyeyi' kugira ngo urebe ababyeyi bose bo mu mudugudu wawe."
               colors={colors}
             />
             <FaqItem
-              q="Nshobora gufungura konti nshya?"
-              a="Yego. Sohoka, hanyuma kanda 'Fungura konti nshya' kuri paji yo kwinjira."
+              q="Nshobora gusubiza ibibazo bya ababyeyi?"
+              a="Yego. Koresha sisitemu ya chat (Ubutumwa) kugira ngo uganire n'ababyeyi kandi ubahe inama."
               colors={colors}
             />
             <FaqItem
-              q="Porogaramu ikora nta interineti?"
-              a="Yego! Amasomo yose abitswe ku telefoni. Ntukeneye interineti ngo urebe inyigisho."
+              q="Amasomo ni ayahe?"
+              a="Ufite amasomo yose ababyeyi bafite. Uzabona amasomo kuri paji ya 'Amasomo' kugira ngo wumve neza ibyo ababyeyi biga."
               colors={colors}
             />
-            <View style={[styles.contactBox, { backgroundColor: colors.primary + "10", borderColor: colors.primary + "30" }]}>
-              <Feather name="mail" size={18} color={colors.primary} />
+            <View style={[styles.contactBox, { backgroundColor: CHW_COLOR + "10", borderColor: CHW_COLOR + "30" }]}>
+              <Feather name="mail" size={18} color={CHW_COLOR} />
               <View>
-                <Text style={[styles.contactLabel, { color: colors.primary }]}>Twandikire</Text>
+                <Text style={[styles.contactLabel, { color: CHW_COLOR }]}>Twandikire</Text>
                 <Text style={[styles.contactValue, { color: colors.foreground }]}>support@imirire.rw</Text>
               </View>
             </View>
@@ -386,7 +388,7 @@ export default function ParentProfileScreen() {
             </View>
 
             <TouchableOpacity 
-              style={[styles.saveEditBtn, { backgroundColor: colors.primary, opacity: saving ? 0.7 : 1 }]} 
+              style={[styles.saveEditBtn, { backgroundColor: CHW_COLOR, opacity: saving ? 0.7 : 1 }]} 
               onPress={handleUpdateProfile}
               disabled={saving}
             >
@@ -418,14 +420,14 @@ export default function ParentProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-            <Text style={styles.avatarText}>{userName ? userName[0].toUpperCase() : "U"}</Text>
+          <View style={[styles.avatar, { backgroundColor: CHW_COLOR }]}>
+            <Text style={styles.avatarText}>{userName ? userName[0].toUpperCase() : "C"}</Text>
           </View>
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: colors.foreground }]}>{userName || "Umubyeyi"}</Text>
+            <Text style={[styles.profileName, { color: colors.foreground }]}>{userName || "CHW"}</Text>
             <View style={[styles.roleBadge, { backgroundColor: colors.secondary }]}>
-              <Feather name="users" size={11} color={colors.primary} />
-              <Text style={[styles.roleLabel, { color: colors.primary }]}>Umubyeyi</Text>
+              <Feather name="heart" size={11} color={CHW_COLOR} />
+              <Text style={[styles.roleLabel, { color: CHW_COLOR }]}>Umukozi w'Ubuzima</Text>
             </View>
           </View>
         </View>
@@ -439,7 +441,7 @@ export default function ParentProfileScreen() {
                 onPress={() => setActiveModal(item.modal)}
               >
                 <View style={[styles.menuIcon, { backgroundColor: colors.secondary }]}>
-                  <Feather name={item.icon as any} size={18} color={colors.primary} />
+                  <Feather name={item.icon as any} size={18} color={CHW_COLOR} />
                 </View>
                 <View style={styles.menuText}>
                   <Text style={[styles.menuLabel, { color: colors.foreground }]}>{item.label}</Text>
@@ -489,10 +491,10 @@ export default function ParentProfileScreen() {
   );
 }
 
-function InfoRow({ icon, label, value, colors }: any) {
+function InfoRow({ icon, label, value, colors, accentColor }: any) {
   return (
     <View style={[infoStyles.row, { borderBottomColor: colors.border }]}>
-      <Feather name={icon} size={16} color={colors.primary} />
+      <Feather name={icon} size={16} color={accentColor} />
       <View style={{ flex: 1 }}>
         <Text style={[infoStyles.label, { color: colors.mutedForeground }]}>{label}</Text>
         <Text style={[infoStyles.value, { color: colors.foreground }]}>{value}</Text>
@@ -574,13 +576,11 @@ const styles = StyleSheet.create({
   logoutBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 14, borderRadius: 14, gap: 8 },
   logoutText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#ef4444" },
   version: { fontSize: 11, fontFamily: "Inter_400Regular", textAlign: "center" },
-  // Modal
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
   modalSheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "85%" },
   modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 20, borderBottomWidth: 1 },
   modalTitle: { fontSize: 18, fontFamily: "Inter_700Bold" },
   modalContent: { padding: 20, gap: 12, paddingBottom: 40 },
-  // Modals
   infoCard: { alignItems: "center", padding: 24, borderRadius: 16, gap: 10, marginBottom: 8 },
   bigAvatar: { width: 80, height: 80, borderRadius: 40, alignItems: "center", justifyContent: "center" },
   bigAvatarText: { fontSize: 32, fontFamily: "Inter_700Bold", color: "#fff" },

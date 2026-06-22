@@ -9,6 +9,8 @@ import { AgeCategoryModule } from './age-category/age-category.module';
 import { ContentModule } from './content/content.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { CHWModule } from './chw/chw.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { UserModule } from './user/user.module';
     ContentModule,
     AuthModule,
     UserModule,
+    CHWModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

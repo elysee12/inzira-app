@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 type UserPublic = {
@@ -12,14 +12,17 @@ type UserPublic = {
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(data: any) {
+    return this.prisma.user.create({ data });
+  }
+
+  async findByEmail(email: string) {
+    return this.prisma.user.findUnique({ where: { email } });
+  }
 
   async findByRole(role: string): Promise<UserPublic[]> {
-    const validRoles = ['ADMIN', 'PARENT'];
-    if (!validRoles.includes(role.toUpperCase())) {
-      throw new BadRequestException(`Invalid role: ${role}`);
-    }
-
     return this.prisma.user.findMany({
       where: { role: role.toUpperCase() as any },
       select: {
@@ -46,6 +49,26 @@ export class UserService {
       },
       orderBy: { createdAt: 'desc' },
     }) as any;
+  }
+
+  async findById(id: number): Promise<UserPublic> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        name: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Umukoresha ufite ID ${id} ntabwo abonetse.`);
+    }
+
+    return user as any;
   }
 
   async getUserStats(
@@ -97,5 +120,34 @@ export class UserService {
     await this.prisma.user.delete({
       where: { id },
     });
+  }
+
+  async getAssignedCHW(parentId: number): Promise<any> {
+    // Get parent's village location
+    const parent = await this.prisma.user.findUnique({
+      where: { id: parentId },
+      select: { village: true },
+    });
+
+    if (!parent || !parent.village) {
+      return null;
+    }
+
+    // Find CHW in the same village
+    const chw = await this.prisma.user.findFirst({
+      where: {
+        role: 'CHW',
+        village: parent.village,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        village: true,
+      },
+    });
+
+    return chw;
   }
 }
