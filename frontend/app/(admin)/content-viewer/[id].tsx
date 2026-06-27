@@ -1,8 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Audio, Video } from "expo-av";
 import WebView from "react-native-webview";
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
@@ -20,7 +22,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { AppHeader } from "@/components/AppHeader";
 import { DocumentPreviewModal } from "@/components/DocumentPreviewModal";
 import { useContent } from "@/context/ContentContext";
-import { getImageUrl, BASE_URL } from "@/context/apiClient";
+import { getImageUrl } from "@/context/apiClient";
 import { useColors } from "@/hooks/useColors";
 import type { ContentItem } from "@/data/staticData";
 
@@ -35,6 +37,13 @@ export default function AdminContentViewerScreen() {
   const [contentItem, setContentItem] = useState<ContentItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [previewVisible, setPreviewVisible] = useState(false);
+  
+  // Audio player state
+  const audioRef = useRef<Audio.Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     if (id && allContent.length > 0) {
@@ -48,6 +57,14 @@ export default function AdminContentViewerScreen() {
       setLoading(false); // Or handle a loading state more robustly
     }
   }, [id, allContent]);
+
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.unloadAsync();
+      }
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -73,6 +90,44 @@ export default function AdminContentViewerScreen() {
 
   const fileUrl = contentItem.fileUrl ? getImageUrl(contentItem.fileUrl) : null;
   const isLocalUrl = fileUrl?.includes('localhost') || fileUrl?.includes('127.0.0.1') || fileUrl?.includes('10.') || fileUrl?.includes('192.168.');
+
+  // Handle audio play/pause
+  const handlePlayPause = async () => {
+    if (!fileUrl) return;
+    try {
+      setIsLoadingAudio(true);
+      if (audioRef.current) {
+        if (isPlaying) {
+          await audioRef.current.pauseAsync();
+          setIsPlaying(false);
+        } else {
+          await audioRef.current.playAsync();
+          setIsPlaying(true);
+        }
+      } else {
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: fileUrl },
+          { progressUpdateIntervalMillis: 100 }
+        );
+        audioRef.current = sound;
+        
+        sound.setOnPlaybackStatusUpdate((status: any) => {
+          if (status.isLoaded) {
+            setCurrentPosition(status.positionMillis);
+            setDuration(status.durationMillis);
+            setIsPlaying(status.isPlaying);
+          }
+        });
+        
+        await sound.playAsync();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error("Audio error:", error);
+    } finally {
+      setIsLoadingAudio(false);
+    }
+  };
 
   const openDocument = async () => {
     if (!fileUrl) return;
@@ -129,17 +184,73 @@ export default function AdminContentViewerScreen() {
       case "audio":
         return (
           <View style={styles.mediaContainer}>
-            <Feather name="headphones" size={60} color={ADMIN_COLOR} />
-            <Text style={[styles.mediaText, { color: colors.foreground }]}>Audio Player (Not Implemented)</Text>
-            {fileUrl && <Text style={[styles.fileLink, { color: colors.primary }]}>{fileUrl}</Text>}
+            {fileUrl ? (
+              <View style={styles.audioWrapper}>
+                <Feather name="headphones" size={60} color={ADMIN_COLOR} />
+                <TouchableOpacity
+                  style={[styles.audioPlayButton, { backgroundColor: ADMIN_COLOR, opacity: isLoadingAudio ? 0.7 : 1 }]}
+                  onPress={handlePlayPause}
+                  disabled={isLoadingAudio}
+                >
+                  {isLoadingAudio ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <Feather name={isPlaying ? "pause" : "play"} size={24} color="#fff" />
+                  )}
+                </TouchableOpacity>
+                <Text style={[styles.mediaText, { color: colors.foreground }]}> 
+                  {isLoadingAudio
+                    ? "Irimo gukonjesha..."
+                    : isPlaying
+                    ? "Audio irimo kumvikana."
+                    : "Kanda kugira ngo utekereze audio."}
+                </Text>
+                {duration > 0 && (
+                  <View style={styles.progressBar}>
+                    <View
+                      style={[
+                        styles.progressFill,
+                        { backgroundColor: ADMIN_COLOR, width: `${(currentPosition / duration) * 100}%` },
+                      ]}
+                    />
+                  </View>
+                )}
+                {duration > 0 && (
+                  <Text style={[styles.timeText, { color: colors.mutedForeground }]}> 
+                    {Math.floor(currentPosition / 1000)}s / {Math.floor(duration / 1000)}s
+                  </Text>
+                )}
+              </View>
+            ) : (
+              <>
+                <Feather name="headphones" size={60} color={ADMIN_COLOR} />
+                <Text style={[styles.mediaText, { color: colors.foreground }]}>Nta jwi ryo kumva rihari</Text>
+              </>
+            )}
           </View>
         );
       case "video":
         return (
           <View style={styles.mediaContainer}>
-            <Feather name="play-circle" size={60} color={ADMIN_COLOR} />
-            <Text style={[styles.mediaText, { color: colors.foreground }]}>Video Player (Not Implemented)</Text>
-            {fileUrl && <Text style={[styles.fileLink, { color: colors.primary }]}>{fileUrl}</Text>}
+            {fileUrl ? (
+              <Video
+                source={{ uri: fileUrl }}
+                rate={1.0}
+                volume={1.0}
+                isMuted={false}
+                resizeMode="contain"
+                shouldPlay={false}
+                isLooping={false}
+                useNativeControls
+                style={styles.videoPlayer}
+                onError={() => Alert.alert("Makosa", "Video ntishobora gutangwa.")}
+              />
+            ) : (
+              <>
+                <Feather name="play-circle" size={60} color={ADMIN_COLOR} />
+                <Text style={[styles.mediaText, { color: colors.foreground }]}>Nta video yo kureba ihari</Text>
+              </>
+            )}
           </View>
         );
       default:
@@ -195,12 +306,46 @@ const styles = StyleSheet.create({
   contentMeta: { fontSize: 13, fontFamily: "Inter_500Medium" },
   contentBody: { fontSize: 16, fontFamily: "Inter_400Regular", lineHeight: 24, padding: 20 },
   mediaContainer: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    minHeight: 200,
+    minHeight: 250,
     padding: 20,
-    gap: 10,
+    gap: 15,
+  },
+  videoPlayer: {
+    width: '100%',
+    height: 250,
+    borderRadius: 12,
+    backgroundColor: '#000',
+  },
+  audioWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    gap: 12,
+  },
+  audioPlayButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  progressBar: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 999,
+    overflow: 'hidden',
+    marginTop: 4,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 999,
+  },
+  timeText: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
   },
   mediaText: { fontSize: 16, fontFamily: "Inter_600SemiBold" },
   fileLink: { fontSize: 12, fontFamily: "Inter_400Regular", textDecorationLine: "underline" },

@@ -1,5 +1,6 @@
 import { Controller, Post, Body, UnauthorizedException, Get, Request, UseGuards, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -51,5 +52,17 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body('email') email: string, @Body('otp') otp: string, @Body('newPassword') newPass: string) {
     return this.authService.resetPassword(email, otp, newPass);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('change-password')
+  async changePassword(@Request() req: any, @Body() body: any) {
+    if (!body.currentPassword || !body.newPassword || !body.confirmPassword) {
+      throw new BadRequestException('Uzuza insobe zose: ijambo ry\'ibanga kiganjwe, rishya, no kumenya rishya');
+    }
+    if (body.newPassword !== body.confirmPassword) {
+      throw new BadRequestException('Ijambo ry\'ibanga rishya na rya kumenya ntirifanana');
+    }
+    return this.authService.changePassword(req.user.id, body.currentPassword, body.newPassword);
   }
 }

@@ -34,7 +34,7 @@ interface AuthContextType extends AuthState {
   resetPassword: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   sendOtp: (email: string) => Promise<{ success: boolean; error?: string }>;
   verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; error?: string }>;
-  updateUser: (updates: { name?: string; phone?: string; email?: string }) => Promise<{ success: boolean; error?: string }>;
+  updateUser: (updates: { name?: string; phone?: string; email?: string; password?: string }) => Promise<{ success: boolean; error?: string }>;
 }
 
 const STORAGE_KEY = "imirire_auth";
@@ -199,7 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const updateUser = useCallback(async (updates: { name?: string; phone?: string; email?: string }): Promise<{ success: boolean; error?: string }> => {
+  const updateUser = useCallback(async (updates: { name?: string; phone?: string; email?: string; password?: string }): Promise<{ success: boolean; error?: string }> => {
     try {
       if (!state.userId) throw new Error("User ID missing");
       

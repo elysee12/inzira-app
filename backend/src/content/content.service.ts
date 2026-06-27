@@ -184,6 +184,12 @@ export class ContentService implements OnModuleInit {
     } else if (updates.fileUrl) {
       // If it's a new file but not docx/pdf, clear the textContent
       updates.textContent = null;
+    } else if (updates.textContent !== undefined) {
+      // If textContent is being updated directly (not via file)
+      // Allow empty string to be saved as null
+      if (updates.textContent === '') {
+        updates.textContent = null;
+      }
     }
 
     // Remove oldFileUrl from updates if present (it's only for internal tracking)

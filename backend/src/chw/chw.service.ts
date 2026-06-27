@@ -101,7 +101,7 @@ export class CHWService {
   }
 
   async getAllCHWs(): Promise<CHWPublic[]> {
-    return this.prisma.user.findMany({
+    const chws = await this.prisma.user.findMany({
       where: { role: 'CHW' },
       select: {
         id: true,
@@ -115,12 +115,29 @@ export class CHWService {
         cell: true,
         village: true,
         createdAt: true,
-        _count: {
-          select: { assignedParents: true },
-        },
       },
       orderBy: { createdAt: 'desc' },
-    }) as any;
+    });
+
+    // Manually count parents for each CHW based on village
+    const chwsWithCount = await Promise.all(
+      chws.map(async (chw) => {
+        const parentCount = await this.prisma.user.count({
+          where: {
+            role: 'PARENT',
+            village: chw.village,
+          },
+        });
+        return {
+          ...chw,
+          _count: {
+            assignedParents: parentCount,
+          },
+        };
+      }),
+    );
+
+    return chwsWithCount as any;
   }
 
   async getCHWById(id: number): Promise<CHWPublic> {
@@ -138,9 +155,6 @@ export class CHWService {
         cell: true,
         village: true,
         createdAt: true,
-        _count: {
-          select: { assignedParents: true },
-        },
       },
     });
 
@@ -148,7 +162,19 @@ export class CHWService {
       throw new NotFoundException('CHW ntibashoboka.');
     }
 
-    return chw as CHWPublic;
+    const parentCount = await this.prisma.user.count({
+      where: {
+        role: 'PARENT',
+        village: chw.village,
+      },
+    });
+
+    return {
+      ...chw,
+      _count: {
+        assignedParents: parentCount,
+      },
+    } as any;
   }
 
   async updateCHW(

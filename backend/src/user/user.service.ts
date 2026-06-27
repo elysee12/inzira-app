@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 type UserPublic = {
   id: number;
@@ -7,6 +8,11 @@ type UserPublic = {
   phone: string;
   name: string;
   role: string;
+  province?: string;
+  district?: string;
+  sector?: string;
+  cell?: string;
+  village?: string;
   createdAt: Date;
 };
 
@@ -31,6 +37,11 @@ export class UserService {
         phone: true,
         name: true,
         role: true,
+        province: true,
+        district: true,
+        sector: true,
+        cell: true,
+        village: true,
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -45,6 +56,11 @@ export class UserService {
         phone: true,
         name: true,
         role: true,
+        province: true,
+        district: true,
+        sector: true,
+        cell: true,
+        village: true,
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -60,6 +76,11 @@ export class UserService {
         phone: true,
         name: true,
         role: true,
+        province: true,
+        district: true,
+        sector: true,
+        cell: true,
+        village: true,
         createdAt: true,
       },
     });
@@ -102,15 +123,26 @@ export class UserService {
   }
 
   async update(id: number, data: any): Promise<UserPublic> {
+    const updateData = { ...data };
+    
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+
     return this.prisma.user.update({
       where: { id },
-      data,
+      data: updateData,
       select: {
         id: true,
         email: true,
         phone: true,
         name: true,
         role: true,
+        province: true,
+        district: true,
+        sector: true,
+        cell: true,
+        village: true,
         createdAt: true,
       },
     }) as any;

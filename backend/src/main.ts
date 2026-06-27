@@ -9,6 +9,8 @@ async function bootstrap() {
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    exposedHeaders: ['Content-Range', 'Accept-Ranges', 'Content-Length'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
   });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({

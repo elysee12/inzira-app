@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseInterceptors, UploadedFile, BadRequestException, NotFoundException, Res } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import type { Response } from 'express';
 import { ContentService } from './content.service';
 import { Content } from '@prisma/client';
 import * as fs from 'fs';
@@ -17,6 +18,51 @@ export class ContentController {
       return this.contentService.findByAgeGroup(ageGroup);
     }
     return this.contentService.findAll();
+  }
+
+  @Get('preview')
+  async preview(@Query('fileUrl') fileUrl: string, @Res() res: Response) {
+    if (!fileUrl) {
+      throw new BadRequestException('fileUrl query parameter is required');
+    }
+
+    const normalizedPath = fileUrl.startsWith('/uploads') ? fileUrl.replace(/^\/+/, '') : fileUrl;
+    const absolutePath = path.resolve(process.cwd(), normalizedPath);
+    const baseDir = path.resolve(process.cwd());
+    const relativePath = path.relative(baseDir, absolutePath);
+
+    if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+      throw new BadRequestException('Invalid file path');
+    }
+
+    if (!fs.existsSync(absolutePath)) {
+      throw new NotFoundException('File not found');
+    }
+
+    const extension = path.extname(absolutePath).toLowerCase();
+    const contentTypeMap: Record<string, string> = {
+      '.pdf': 'application/pdf',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.mp4': 'video/mp4',
+      '.webm': 'video/webm',
+      '.mp3': 'audio/mpeg',
+      '.wav': 'audio/wav',
+      '.aac': 'audio/aac',
+      '.m4a': 'audio/mp4',
+      '.txt': 'text/plain; charset=utf-8',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+    };
+
+    res.setHeader('Content-Type', contentTypeMap[extension] ?? 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename="${path.basename(absolutePath)}"`);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    return res.sendFile(absolutePath);
   }
 
   @Get(':id')
@@ -73,16 +119,19 @@ export class ContentController {
     const updates: any = {};
 
     // Only add fields that are provided
-    if (data.title) updates.title = data.title;
-    if (data.description) updates.description = data.description;
-    if (data.type) updates.type = data.type;
-    if (data.duration) updates.duration = data.duration;
-    if (data.ageGroup) updates.ageGroup = data.ageGroup;
+    if (data.title !== undefined) updates.title = data.title;
+    if (data.description !== undefined) updates.description = data.description;
+    if (data.type !== undefined) updates.type = data.type;
+    if (data.duration !== undefined) updates.duration = data.duration;
+    if (data.ageGroup !== undefined) updates.ageGroup = data.ageGroup;
+    if (data.textContent !== undefined) updates.textContent = data.textContent;
+    if (data.isNew !== undefined) updates.isNew = data.isNew === 'true' || data.isNew === true;
 
     // Handle file upload if provided
     if (file) {
       updates.fileUrl = `/uploads/${file.filename}`;
-      updates.oldFileUrl = data.oldFileUrl; // Pass old file URL for deletion
+    } else if (data.fileUrl !== undefined) {
+      updates.fileUrl = data.fileUrl;
     }
 
     return this.contentService.update(+id, updates);

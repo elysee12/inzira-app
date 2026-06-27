@@ -97,6 +97,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
             selectedValue={value.province}
             onValueChange={(itemValue) => onChange({ province: itemValue, district: '', sector: '', cell: '', village: '' })}
             style={[styles.picker, { color: colors.foreground }]}
+            itemStyle={styles.pickerItem}
           >
             <Picker.Item label="Hitamo intara..." value="" />
             {provinces.map((province: any) => (
@@ -115,6 +116,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
               selectedValue={value.district}
               onValueChange={(itemValue) => onChange({ ...value, district: itemValue, sector: '', cell: '', village: '' })}
               style={[styles.picker, { color: colors.foreground }]}
+              itemStyle={styles.pickerItem}
             >
               <Picker.Item label="Hitamo akarere..." value="" />
               {districts.map((district: any) => (
@@ -134,6 +136,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
               selectedValue={value.sector}
               onValueChange={(itemValue) => onChange({ ...value, sector: itemValue, cell: '', village: '' })}
               style={[styles.picker, { color: colors.foreground }]}
+              itemStyle={styles.pickerItem}
             >
               <Picker.Item label="Hitamo umurenge..." value="" />
               {sectors.map((sector: any) => (
@@ -153,6 +156,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
               selectedValue={value.cell}
               onValueChange={(itemValue) => onChange({ ...value, cell: itemValue, village: '' })}
               style={[styles.picker, { color: colors.foreground }]}
+              itemStyle={styles.pickerItem}
             >
               <Picker.Item label="Hitamo akagari..." value="" />
               {cells.map((cell: any) => (
@@ -172,6 +176,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
               selectedValue={value.village}
               onValueChange={(itemValue) => onChange({ ...value, village: itemValue })}
               style={[styles.picker, { color: colors.foreground }]}
+              itemStyle={styles.pickerItem}
             >
               <Picker.Item label="Hitamo umudugudu..." value="" />
               {villages.map((village: string) => (
@@ -207,5 +212,9 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
+    fontSize: 14,
+  },
+  pickerItem: {
+    fontSize: 14,
   },
 });

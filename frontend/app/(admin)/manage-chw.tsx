@@ -12,6 +12,7 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import apiClient from "@/context/apiClient";
 import { useColors } from "@/hooks/useColors";
@@ -31,6 +32,7 @@ interface CHW {
 
 export default function ManageCHWScreen() {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const [chws, setCHWs] = useState<CHW[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -218,8 +220,8 @@ export default function ManageCHWScreen() {
       </ScrollView>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+        <View style={[styles.modalOverlay, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}> 
+          <View style={[styles.modalContent, { backgroundColor: colors.background, maxHeight: "86%" }]}> 
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.foreground }]}>
                 {editingCHW ? "Hindura CHW" : "Ongeraho CHW"}
@@ -229,7 +231,11 @@ export default function ManageCHWScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.modalBody}>
+            <ScrollView
+              style={styles.modalBody}
+              contentContainerStyle={[styles.modalBodyContent, { paddingBottom: insets.bottom + 20 }]}
+              keyboardShouldPersistTaps="handled"
+            >
               <Text style={[styles.label, { color: colors.foreground }]}>Izina *</Text>
               <TextInput
                 style={[styles.input, { backgroundColor: colors.card, color: colors.foreground, borderColor: colors.border }]}
@@ -372,12 +378,13 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
+    paddingHorizontal: 0,
   },
   modalContent: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: "90%",
+    width: "100%",
   },
   modalHeader: {
     flexDirection: "row",
@@ -393,7 +400,11 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_700Bold",
   },
   modalBody: {
-    padding: 20,
+    paddingHorizontal: 20,
+  },
+  modalBodyContent: {
+    paddingTop: 4,
+    paddingBottom: 16,
   },
   label: {
     fontSize: 14,

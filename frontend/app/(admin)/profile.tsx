@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Modal,
@@ -155,7 +156,13 @@ export default function AdminProfileScreen() {
   const videoCount = allContent.filter((c) => c.type === "video").length;
 
   const menuItems = [
-    { icon: "user", label: "Umwirondoro wanjye", sublabel: userName || "Umuyobozi", modal: "profile" as ModalType },
+    {
+      icon: "user",
+      label: "Umwirondoro wanjye",
+      sublabel: userPhone || "Reba amakuru yawe",
+      action: () => router.push("/(admin)/profile-details"),
+      modal: "profile" as ModalType,
+    },
     { icon: "users", label: "Genzura Ababyeyi", sublabel: `${parents.length || "..."} ababyeyi`, modal: "parents" as ModalType },
     { icon: "bar-chart-2", label: "Raporo", sublabel: "Reba imikorere", modal: "report" as ModalType },
     { icon: "settings", label: "Igenamiterere", sublabel: "Hindura igenamiterere", modal: "settings" as ModalType },
@@ -575,7 +582,13 @@ export default function AdminProfileScreen() {
               <TouchableOpacity
                 style={styles.menuItem}
                 activeOpacity={0.7}
-                onPress={() => setActiveModal(item.modal)}
+                onPress={() => {
+                  if (item.modal === "profile") {
+                    router.push("/(admin)/profile-details");
+                    return;
+                  }
+                  setActiveModal(item.modal);
+                }}
               >
                 <View style={[styles.menuIcon, { backgroundColor: ADMIN_COLOR + "15" }]}>
                   <Feather name={item.icon as any} size={18} color={ADMIN_COLOR} />

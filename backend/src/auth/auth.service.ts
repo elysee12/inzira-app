@@ -102,4 +102,29 @@ export class AuthService {
 
     return { message: "Ijambo ry'ibanga ryahinduwe neza." };
   }
+
+  async changePassword(userId: number, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('Nta konti iboneka.');
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Ijambo ry\'ibanga cyanyu cyaha.');
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+
+    return { message: "Ijambo ry'ibanga ryahinduwe neza." };
+  }
 }

@@ -6,14 +6,38 @@ import { AgeCategory } from '@prisma/client';
 export class AgeCategoryService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(): Promise<AgeCategory[]> {
-    return this.prisma.ageCategory.findMany();
+  async findAll(): Promise<any[]> {
+    const categories = await this.prisma.ageCategory.findMany({
+      include: {
+        _count: {
+          select: { contents: true }
+        }
+      }
+    });
+    
+    // Map to include contentCount
+    return categories.map(category => ({
+      ...category,
+      contentCount: category._count.contents
+    }));
   }
 
-  async findOne(id: string): Promise<AgeCategory | null> {
-    return this.prisma.ageCategory.findUnique({
+  async findOne(id: string): Promise<any | null> {
+    const category = await this.prisma.ageCategory.findUnique({
       where: { id },
+      include: {
+        _count: {
+          select: { contents: true }
+        }
+      }
     });
+    
+    if (!category) return null;
+    
+    return {
+      ...category,
+      contentCount: category._count.contents
+    };
   }
 
   async create(data: any): Promise<AgeCategory> {

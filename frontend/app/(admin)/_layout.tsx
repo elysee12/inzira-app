@@ -71,6 +71,12 @@ export default function AdminLayout() {
         }}
       />
       <Tabs.Screen
+        name="profile-details"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="manage-categories"
         options={{
           title: "Ikiciro",
