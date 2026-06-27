@@ -17,7 +17,19 @@ export default defineConfig({
       // Ensure proper output for static hosting
       outDir: "dist",
       emptyOutDir: true,
+      rollupOptions: {
+        output: {
+          manualChunks: undefined,
+        },
+      },
     },
     publicDir: "public",
+  },
+  nitro: {
+    preset: 'static',
+    prerender: {
+      crawlLinks: true,
+      routes: ['/'],
+    },
   },
 });
