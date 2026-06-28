@@ -29,7 +29,7 @@ function LoginPage() {
     try {
       await login(email, password);
       toast.success("Welcome back!");
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/dashboard", search: {} });
     } catch (err: any) {
       const msg = err?.message ?? "Login failed. Check your credentials.";
       setError(msg);

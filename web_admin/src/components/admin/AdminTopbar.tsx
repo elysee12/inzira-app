@@ -59,7 +59,7 @@ export function AdminTopbar() {
 
   const handleLogout = () => {
     logout();
-    navigate({ to: "/login" });
+    navigate({ to: "/login", search: {} });
   };
 
   return (

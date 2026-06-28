@@ -42,7 +42,7 @@ export function AdminSidebar() {
 
   const handleLogout = () => {
     logout();
-    navigate({ to: "/login" });
+    navigate({ to: "/login", search: {} });
   };
 
   const isActive = (to: string) =>

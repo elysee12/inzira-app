@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef } from "react";
+import { useState, useRef, type RefObject } from "react";
 import { Pencil, Plus, Image, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { categoryApi, fileUrl, type AgeCategory } from "@/lib/api";
@@ -14,6 +14,8 @@ function CategoriesPage() {
   const categories = useQuery({ queryKey: ["categories"], queryFn: categoryApi.list });
   const [editing, setEditing] = useState<AgeCategory | null>(null);
   const [creating, setCreating] = useState(false);
+
+  const imgRef = useRef<HTMLInputElement | null>(null);
 
   const updateMut = useMutation({
     mutationFn: ({ data, image }: { data: AgeCategory; image?: File }) =>
@@ -236,7 +238,7 @@ function CategoryFormFields({
   setForm: (f: AgeCategory) => void;
   image?: File;
   setImage: (f?: File) => void;
-  imgRef: React.RefObject<HTMLInputElement>;
+  imgRef: React.RefObject<HTMLInputElement | null>;
   showId?: boolean;
 }) {
   return (

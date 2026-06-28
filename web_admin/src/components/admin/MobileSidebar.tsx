@@ -22,7 +22,7 @@ export function MobileSidebar({ onClose }: { onClose: () => void }) {
 
   const handleLogout = () => {
     logout();
-    navigate({ to: "/login" });
+    navigate({ to: "/login", search: {} });
   };
 
   return (

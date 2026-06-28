@@ -24,7 +24,8 @@ const queryClient = new QueryClient({
 console.log('[IMIRIRE] QueryClient created');
 
 // Create router instance
-let router;
+type AppRouter = ReturnType<typeof createRouter>;
+let router: AppRouter | undefined;
 try {
   router = createRouter({
     routeTree,
@@ -38,10 +39,14 @@ try {
   throw error;
 }
 
+if (!router) {
+  throw new Error('[IMIRIRE] Router initialization failed');
+}
+
 // Register router for type safety
 declare module '@tanstack/react-router' {
   interface Register {
-    router: typeof router;
+    router: AppRouter;
   }
 }
 

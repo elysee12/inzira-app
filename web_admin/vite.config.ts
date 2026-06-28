@@ -22,10 +22,10 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'router-vendor': ['@tanstack/react-router', '@tanstack/react-query'],
-          'ui-vendor': ['lucide-react', 'sonner'],
+        manualChunks(id) {
+          if (id.includes('node_modules/react')) return 'react-vendor';
+          if (id.includes('node_modules/@tanstack/react-router') || id.includes('node_modules/@tanstack/react-query')) return 'router-vendor';
+          if (id.includes('node_modules/lucide-react') || id.includes('node_modules/sonner')) return 'ui-vendor';
         },
       },
     },

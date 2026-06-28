@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Search, MapPin, Phone, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { userApi, type Role, type User } from "@/lib/api";
+import { userApi, chwApi, type Role, type User } from "@/lib/api";
 import { Card, Button, Badge } from "./ui";
 import { Modal, ConfirmDialog, FormField, inputClass } from "./Modal";
 
@@ -20,11 +20,13 @@ export function UserManager({ role }: { role: Extract<Role, "CHW" | "PARENT"> })
   const [toDelete, setToDelete] = useState<User | null>(null);
   const [search, setSearch] = useState("");
 
-  const saveMut = useMutation({
+  const saveMut = useMutation<User | { chw: CHW; temporaryPassword: string }, Error, Partial<User>>({
     mutationFn: (data: Partial<User>) =>
       modal.editing
         ? userApi.update(modal.editing.id, data)
-        : userApi.create({ ...data, role }),
+        : role === "CHW"
+        ? chwApi.create(data as any)
+        : userApi.createParent({ ...data, role } as any),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
       qc.invalidateQueries({ queryKey: ["stats"] });
