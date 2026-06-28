@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Search, MapPin, Phone, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { userApi, chwApi, type Role, type User } from "@/lib/api";
+import { userApi, chwApi, type Role, type User, type CHW } from "@/lib/api";
 import { Card, Button, Badge } from "./ui";
 import { Modal, ConfirmDialog, FormField, inputClass } from "./Modal";
 
