@@ -1,12 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider } from '@tanstack/react-router';
+import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './lib/auth-context';
-import { getRouter } from './router';
+import { routeTree } from './routeTree.gen';
 
 import './styles.css';
+
+console.log('[IMIRIRE] Starting app initialization...');
+console.log('[IMIRIRE] Route tree:', routeTree);
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -18,17 +21,59 @@ const queryClient = new QueryClient({
   },
 });
 
+console.log('[IMIRIRE] QueryClient created');
+
 // Create router instance
-const router = getRouter();
+let router;
+try {
+  router = createRouter({
+    routeTree,
+    context: { queryClient },
+    scrollRestoration: true,
+    defaultPreloadStaleTime: 0,
+  });
+  console.log('[IMIRIRE] Router created successfully');
+} catch (error) {
+  console.error('[IMIRIRE] Router creation failed:', error);
+  throw error;
+}
+
+// Register router for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 // Mount the app
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RouterProvider router={router} context={{ queryClient }} />
-        <Toaster richColors position="top-right" />
-      </AuthProvider>
-    </QueryClientProvider>
-  </React.StrictMode>
-);
+console.log('[IMIRIRE] Mounting React app...');
+
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  console.error('[IMIRIRE] Root element not found!');
+} else {
+  console.log('[IMIRIRE] Root element found, creating React root...');
+  try {
+    ReactDOM.createRoot(rootElement).render(
+      <React.StrictMode>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <RouterProvider router={router} />
+            <Toaster richColors position="top-right" />
+          </AuthProvider>
+        </QueryClientProvider>
+      </React.StrictMode>
+    );
+    console.log('[IMIRIRE] React app rendered successfully!');
+  } catch (error) {
+    console.error('[IMIRIRE] Render failed:', error);
+    // Render error message directly
+    rootElement.innerHTML = `
+      <div style="padding: 40px; font-family: system-ui">
+        <h1 style="color: red">App Failed to Load</h1>
+        <pre style="background: #f5f5f5; padding: 20px; overflow: auto">${error}</pre>
+      </div>
+    `;
+  }
+}
+
