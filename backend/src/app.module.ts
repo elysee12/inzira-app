@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { CHWModule } from './chw/chw.module';
 import { MessageModule } from './message/message.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { MessageModule } from './message/message.module';
       },
     }),
     PrismaModule,
+    CloudinaryModule,
     AgeCategoryModule,
     ContentModule,
     AuthModule,

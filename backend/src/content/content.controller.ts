@@ -4,13 +4,17 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import type { Response } from 'express';
 import { ContentService } from './content.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { Content } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 
 @Controller('content')
 export class ContentController {
-  constructor(private readonly contentService: ContentService) {}
+  constructor(
+    private readonly contentService: ContentService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   @Get()
   async findAll(@Query('ageGroup') ageGroup?: string): Promise<Content[]> {
@@ -89,6 +93,24 @@ export class ContentController {
       throw new BadRequestException('Invalid postedById: must be a number');
     }
 
+    let fileUrl = data.fileUrl;
+
+    // If Cloudinary is configured and file is uploaded, use Cloudinary
+    if (file && this.cloudinaryService.isConfigured()) {
+      try {
+        const result = await this.cloudinaryService.uploadFile(file, 'imirire/content');
+        fileUrl = result.secure_url;
+        console.log('[Cloudinary] File uploaded:', fileUrl);
+      } catch (error) {
+        console.error('[Cloudinary] Upload failed, falling back to local:', error);
+        // Fallback to local storage if Cloudinary fails
+        fileUrl = `/uploads/${file.filename}`;
+      }
+    } else if (file) {
+      // No Cloudinary configured, use local storage
+      fileUrl = `/uploads/${file.filename}`;
+    }
+
     const contentData = {
       title,
       description,
@@ -96,7 +118,7 @@ export class ContentController {
       duration,
       ageGroup,
       postedById: parsedPostedById,
-      fileUrl: file ? `/uploads/${file.filename}` : data.fileUrl,
+      fileUrl,
     };
     return this.contentService.create(contentData);
   }
@@ -128,7 +150,16 @@ export class ContentController {
     if (data.isNew !== undefined) updates.isNew = data.isNew === 'true' || data.isNew === true;
 
     // Handle file upload if provided
-    if (file) {
+    if (file && this.cloudinaryService.isConfigured()) {
+      try {
+        const result = await this.cloudinaryService.uploadFile(file, 'imirire/content');
+        updates.fileUrl = result.secure_url;
+        console.log('[Cloudinary] File uploaded:', updates.fileUrl);
+      } catch (error) {
+        console.error('[Cloudinary] Upload failed, falling back to local:', error);
+        updates.fileUrl = `/uploads/${file.filename}`;
+      }
+    } else if (file) {
       updates.fileUrl = `/uploads/${file.filename}`;
     } else if (data.fileUrl !== undefined) {
       updates.fileUrl = data.fileUrl;
