@@ -1,4 +1,4 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, BookOpen, Layers,
   HeartHandshake, Users, MessageSquare,
@@ -18,11 +18,9 @@ const navItems = [
 export function MobileSidebar({ onClose }: { onClose: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate({ to: "/login", search: {} });
   };
 
   return (

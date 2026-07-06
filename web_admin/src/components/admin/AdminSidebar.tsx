@@ -37,12 +37,10 @@ const nav = [
 export function AdminSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
-    navigate({ to: "/login", search: {} });
   };
 
   const isActive = (to: string) =>

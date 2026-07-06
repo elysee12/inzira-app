@@ -3,7 +3,6 @@ import { Bell, Search, Sun, Moon, User, LogOut, Settings } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../lib/auth-context";
 import { ProfileModal } from "./ProfileModal";
-import { useNavigate } from "@tanstack/react-router";
 
 const titles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard":  { title: "Dashboard",               subtitle: "Platform overview and quick stats"         },
@@ -21,7 +20,6 @@ export function AdminTopbar() {
     Object.entries(titles).find(([p]) => pathname.startsWith(p))?.[1] ??
     { title: "Admin", subtitle: "" };
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   const [dark, setDark] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -59,7 +57,6 @@ export function AdminTopbar() {
 
   const handleLogout = () => {
     logout();
-    navigate({ to: "/login", search: {} });
   };
 
   return (
