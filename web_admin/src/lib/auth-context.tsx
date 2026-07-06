@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { useRouter } from "@tanstack/react-router";
 import { authApi, userApi, type User } from "./api";
 
 interface AuthCtx {
@@ -36,7 +35,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.setItem(SESSION_ID_KEY, newSessionId);
     return newSessionId;
   });
-  const router = useRouter();
 
   // Check if this session is the active one
   const isActiveSession = () => {
@@ -90,7 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         localStorage.removeItem("admin_token");
         localStorage.removeItem("admin_user");
-        router.navigate({ to: "/login" });
+        // Force redirect by reloading the page
+        window.location.href = "/login";
       }
     };
 
@@ -101,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, [sessionId, router]);
+  }, [sessionId]);
 
   // Clean up session on unmount (tab/window close)
   useEffect(() => {
@@ -133,7 +132,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(ACTIVE_SESSION_KEY);
     sessionStorage.removeItem(SESSION_ID_KEY);
     setUser(null);
-    router.navigate({ to: "/login" });
+    // Force redirect by reloading to login page
+    window.location.href = "/login";
   };
 
   const updateUser = async (userData: Partial<User>) => {

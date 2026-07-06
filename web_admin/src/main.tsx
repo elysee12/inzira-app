@@ -63,8 +63,9 @@ if (!rootElement) {
       <React.StrictMode>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <RouterProvider router={router} />
-            <Toaster richColors position="top-right" />
+            <RouterProvider router={router}>
+              <Toaster richColors position="top-right" />
+            </RouterProvider>
           </AuthProvider>
         </QueryClientProvider>
       </React.StrictMode>
