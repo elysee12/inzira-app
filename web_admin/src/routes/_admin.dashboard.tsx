@@ -82,7 +82,7 @@ function DashboardPage() {
             <p className="text-sm text-muted-foreground mt-0.5">Track your educational content across all formats</p>
           </div>
           <Link to="/lessons">
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" className="gap-2">
               <BarChart3 className="size-4" />
               View Details
             </Button>
@@ -124,7 +124,7 @@ function DashboardPage() {
             <p className="text-sm text-muted-foreground mt-0.5">Monitor platform users and engagement</p>
           </div>
           <Link to="/parents">
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" className="gap-2">
               <TrendingUp className="size-4" />
               View All Users
             </Button>
