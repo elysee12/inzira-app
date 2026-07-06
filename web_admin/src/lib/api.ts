@@ -376,9 +376,3 @@ export function fileUrl(path: string | null | undefined): string | undefined {
   // File uploads are served directly from the backend root, not under /api
   return `${BASE_URL}${path}`;
 }
-
-export function previewUrl(path: string | null | undefined): string | undefined {
-  if (!path) return undefined;
-  if (path.startsWith("http")) return path;
-  return `${API_BASE_URL}/content/preview?fileUrl=${encodeURIComponent(path)}`;
-}

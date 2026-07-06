@@ -7,7 +7,7 @@ import { MobileSidebar } from "@/components/admin/MobileSidebar";
 
 export const Route = createFileRoute("/_admin")({
   beforeLoad: () => {
-    if (typeof window !== "undefined" && !window.localStorage.getItem("admin_token")) {
+    if (!window.localStorage.getItem("admin_token")) {
       throw redirect({ to: "/login" });
     }
   },

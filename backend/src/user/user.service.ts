@@ -112,6 +112,7 @@ export class UserService {
     const byRole: Record<string, number> = {
       ADMIN: await this.prisma.user.count({ where: { role: 'ADMIN' } }),
       PARENT: await this.prisma.user.count({ where: { role: 'PARENT' } }),
+      CHW: await this.prisma.user.count({ where: { role: 'CHW' } }),
     };
 
     let byDate = 0;

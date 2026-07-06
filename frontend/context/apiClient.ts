@@ -3,13 +3,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 // // Use Render URL for production
-export const BASE_URL = 'https://inzira-app.onrender.com';
-export const API_URL = `${BASE_URL}/api`;
+// export const BASE_URL = 'https://inzira-app.onrender.com';
+// export const API_URL = `${BASE_URL}/api`;
 
 // Local testing IP (from your ipconfig)
-// const LOCAL_IP = '192.168.0.101';
-// export const BASE_URL = `http://${LOCAL_IP}:3000`;
-// export const API_URL = `${BASE_URL}/api`;
+const LOCAL_IP = '10.220.3.24';
+export const BASE_URL = `http://${LOCAL_IP}:3000`;
+export const API_URL = `${BASE_URL}/api`;
 
 export const getImageUrl = (path: string) => {
   if (!path) return null;

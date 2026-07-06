@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/login")({
   beforeLoad: () => {
-    if (typeof window !== "undefined" && window.localStorage.getItem("admin_token")) {
+    if (window.localStorage.getItem("admin_token")) {
       throw redirect({ to: "/dashboard" });
     }
   },
