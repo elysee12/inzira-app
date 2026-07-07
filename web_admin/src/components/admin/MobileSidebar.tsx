@@ -31,7 +31,14 @@ export function MobileSidebar({ onClose }: { onClose: () => void }) {
           <div className="size-9 rounded-xl bg-white/15 grid place-items-center">
             <Sparkles className="size-4.5" />
           </div>
-          <div className="font-display font-bold text-base">Imirire Admin</div>
+          <div>
+            <div className="font-display font-bold text-base leading-none tracking-tight">
+              Imirire Admin
+            </div>
+            <div className="text-[10px] text-sidebar-foreground/60 mt-0.5 tracking-wide">
+              Management Portal
+            </div>
+          </div>
         </div>
         <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-sidebar-accent">
           <X className="size-4" />

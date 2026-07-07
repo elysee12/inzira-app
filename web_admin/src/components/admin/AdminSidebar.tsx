@@ -57,10 +57,10 @@ export function AdminSidebar() {
             </div>
             <div>
               <div className="font-display font-bold text-base leading-none tracking-tight">
-                Imirire
+                Imirire Admin
               </div>
               <div className="text-[11px] text-sidebar-foreground/60 mt-0.5 tracking-wide">
-                Admin Console
+                Management Portal
               </div>
             </div>
           </Link>

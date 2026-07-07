@@ -52,15 +52,15 @@ function LoginPage() {
             <Sparkles className="size-5" />
           </div>
           <div>
-            <div className="font-display font-bold text-xl leading-none">Imirire</div>
-            <div className="text-xs text-white/60 mt-0.5">Admin Console</div>
+            <div className="font-display font-bold text-xl leading-none">Imirire Admin</div>
+            <div className="text-xs text-white/60 mt-0.5">Management Portal</div>
           </div>
         </div>
 
         {/* Feature bullets */}
         <div className="relative z-10 max-w-sm space-y-6">
           <h2 className="font-display text-4xl font-bold leading-tight tracking-tight">
-            Nourishing every child, one lesson at a time.
+            Imirire Admin Management Portal
           </h2>
           <p className="text-white/75 leading-relaxed text-sm">
             Manage nutrition lessons, age categories, community health workers and parents
