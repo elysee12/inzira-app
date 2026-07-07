@@ -45,6 +45,7 @@ export interface AgeCategory {
   description: string;
   imageUrl?: string | null;
   contentCount?: number;
+  _count?: { contents: number };
 }
 
 export interface Content {
