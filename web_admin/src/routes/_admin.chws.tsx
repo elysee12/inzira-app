@@ -76,19 +76,19 @@ function CHWsPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search health workers…"
+            placeholder="Search Community Health Workers…"
             className="bg-transparent outline-none text-sm flex-1"
           />
         </div>
         <Button onClick={() => setModal({ open: true })}>
-          <Plus className="size-4" /> Add Health Worker
+          <Plus className="size-4" /> Add Community Health Worker
         </Button>
       </div>
 
       {chws.isError && (
         <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
           <AlertCircle className="size-4 shrink-0" />
-          Failed to load health workers. Is the backend running?
+          Failed to load Community Health Workers. Is the backend running?
         </div>
       )}
 
@@ -208,7 +208,7 @@ function CHWsPage() {
               {!chws.isPending && filtered.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center text-muted-foreground">
-                    No health workers found.
+                    No Community Health Workers found.
                   </td>
                 </tr>
               )}
@@ -231,7 +231,7 @@ function CHWsPage() {
         open={!!toDelete}
         onClose={() => setToDelete(null)}
         onConfirm={() => toDelete && deleteMut.mutate(toDelete.id)}
-        title="Delete health worker?"
+        title="Delete Community Health Worker?"
         description={`This will permanently remove ${toDelete?.name}'s account and their credentials.`}
       />
 
@@ -325,7 +325,7 @@ function CHWModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={editing ? "Edit Health Worker" : "Add Health Worker"}
+      title={editing ? "Edit Community Health Worker" : "Add Community Health Worker"}
       size="lg"
       footer={
         <>

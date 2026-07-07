@@ -47,9 +47,10 @@ export class AgeCategoryService {
   }
 
   async update(id: string, data: any): Promise<AgeCategory> {
+    const { _count, contentCount, ...validData } = data;
     return this.prisma.ageCategory.update({
       where: { id },
-      data,
+      data: validData,
     });
   }
 }

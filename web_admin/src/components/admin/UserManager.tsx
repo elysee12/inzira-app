@@ -53,7 +53,7 @@ export function UserManager({ role }: { role: Extract<Role, "CHW" | "PARENT"> })
       u.phone.includes(search)
   );
 
-  const roleLabel = role === "CHW" ? "Health Worker" : "Parent";
+  const roleLabel = role === "CHW" ? "Community Health Worker" : "Parent";
 
   return (
     <div className="space-y-5">
@@ -212,7 +212,7 @@ function UserModal({
     onSave(form);
   };
 
-  const label = role === "CHW" ? "Health Worker" : "Parent";
+  const label = role === "CHW" ? "Community Health Worker" : "Parent";
 
   return (
     <Modal

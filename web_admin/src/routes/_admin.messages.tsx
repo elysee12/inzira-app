@@ -100,7 +100,7 @@ function MessagesPage() {
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm truncate">{u.name}</div>
                   <div className="text-xs text-muted-foreground truncate">
-                    {u.role === "CHW" ? "Health Worker" : "Parent"}
+                    {u.role === "CHW" ? "Community Health Worker" : "Parent"}
                     {u.village && ` · ${u.village}`}
                   </div>
                 </div>

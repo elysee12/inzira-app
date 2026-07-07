@@ -18,8 +18,10 @@ function CategoriesPage() {
   const imgRef = useRef<HTMLInputElement | null>(null);
 
   const updateMut = useMutation({
-    mutationFn: ({ data, image }: { data: AgeCategory; image?: File }) =>
-      categoryApi.update(data.id, data, image),
+    mutationFn: ({ data, image }: { data: AgeCategory; image?: File }) => {
+      const { _count, contentCount, ...cleanData } = data;
+      return categoryApi.update(data.id, cleanData, image);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["categories"] });
       qc.invalidateQueries({ queryKey: ["stats"] });

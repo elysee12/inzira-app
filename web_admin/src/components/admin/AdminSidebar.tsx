@@ -27,7 +27,7 @@ const nav = [
   {
     section: "People",
     items: [
-      { to: "/chws",    label: "Health Workers", icon: HeartHandshake },
+      { to: "/chws",    label: "Community Health Workers", icon: HeartHandshake },
       { to: "/parents", label: "Parents",         icon: Users          },
       { to: "/messages",label: "Messages",        icon: MessageSquare  },
     ],

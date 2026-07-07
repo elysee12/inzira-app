@@ -63,7 +63,7 @@ function DashboardPage() {
                 variant="ghost"
                 style={{ background: "rgba(255,255,255,0.1)" }}
               >
-                <HeartHandshake className="size-5" /> Add Health Worker
+                <HeartHandshake className="size-5" /> Add Community Health Worker
               </Button>
             </Link>
           </div>
@@ -138,7 +138,7 @@ function DashboardPage() {
             tone="primary"
           />
           <StatCard
-            label="Health Workers"
+            label="Community Health Workers"
             value={stats.isPending ? "…" : (stats.data?.chws ?? 0)}
             icon={<HeartHandshake className="size-6" />}
             tone="success"
@@ -326,7 +326,7 @@ function DashboardPage() {
             {
               to: "/chws",
               icon: <HeartHandshake className="size-7" />,
-              title: "Health Workers",
+              title: "Community Health Workers",
               desc: "Create and manage CHW accounts",
               tone: "bg-success/15 text-success border-success/20",
             },
