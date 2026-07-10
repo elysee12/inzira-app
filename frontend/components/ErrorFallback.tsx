@@ -29,7 +29,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
     try {
       await reloadAppAsync();
     } catch (restartError) {
-      console.error("Failed to restart app:", restartError);
+      // If restart fails, just reset the error boundary
       resetError();
     }
   };

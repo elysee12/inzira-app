@@ -19,7 +19,7 @@ function CategoriesPage() {
 
   const updateMut = useMutation({
     mutationFn: ({ data, image }: { data: AgeCategory; image?: File }) => {
-      const { _count, contentCount, ...cleanData } = data;
+      const { _count, contentCount, ...cleanData } = data as any;
       return categoryApi.update(data.id, cleanData, image);
     },
     onSuccess: () => {

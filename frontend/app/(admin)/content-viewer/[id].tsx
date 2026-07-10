@@ -123,7 +123,7 @@ export default function AdminContentViewerScreen() {
         setIsPlaying(true);
       }
     } catch (error) {
-      console.error("Audio error:", error);
+      // Silently fail - audio will remain in loading/error state
     } finally {
       setIsLoadingAudio(false);
     }
@@ -149,7 +149,6 @@ export default function AdminContentViewerScreen() {
         await Sharing.shareAsync(result.uri);
       }
     } catch (error) {
-      console.error(error);
       alert("Ntibyashobotse gufungura inyandiko.");
     } finally {
       setLoading(false);

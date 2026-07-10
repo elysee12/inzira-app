@@ -2,17 +2,26 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, BookOpen, Layers,
   HeartHandshake, Users, MessageSquare,
+  Building2, UserCheck, BarChart3,
   LogOut, Sparkles, X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
-const navItems = [
+const adminNavItems = [
   { to: "/dashboard",  label: "Dashboard",            icon: LayoutDashboard },
-  { to: "/lessons",    label: "Lessons",               icon: BookOpen        },
-  { to: "/categories", label: "Age Categories",        icon: Layers          },
-  { to: "/chws",       label: "Community Health Workers",        icon: HeartHandshake  },
-  { to: "/parents",    label: "Parents",               icon: Users           },
-  { to: "/messages",   label: "Messages",              icon: MessageSquare   },
+  { to: "/facilities", label: "Facilities",           icon: Building2       },
+  { to: "/nurses",     label: "Nurses & Nutritionists", icon: UserCheck    },
+  { to: "/users",      label: "All Users",            icon: Users           },
+  { to: "/reports",    label: "Reports",              icon: BarChart3       },
+] as const;
+
+const nurseNavItems = [
+  { to: "/dashboard",  label: "Dashboard",            icon: LayoutDashboard },
+  { to: "/lessons",    label: "Lessons",              icon: BookOpen        },
+  { to: "/categories", label: "Age Categories",       icon: Layers          },
+  { to: "/chws",       label: "Community Health Workers", icon: HeartHandshake },
+  { to: "/parents",    label: "Parents",              icon: Users           },
+  { to: "/messages",   label: "Messages",             icon: MessageSquare   },
 ] as const;
 
 export function MobileSidebar({ onClose }: { onClose: () => void }) {
@@ -22,6 +31,11 @@ export function MobileSidebar({ onClose }: { onClose: () => void }) {
   const handleLogout = () => {
     logout();
   };
+
+  // Select nav items based on role
+  const navItems = user?.role === "ADMIN" ? adminNavItems : nurseNavItems;
+  const portalTitle = user?.role === "ADMIN" ? "Imirire Admin" : "Imirire Portal";
+  const portalSubtitle = user?.role === "ADMIN" ? "System Administrator" : "Nurse & Nutritionist";
 
   return (
     <aside className="h-full flex flex-col bg-sidebar text-sidebar-foreground">
@@ -33,10 +47,10 @@ export function MobileSidebar({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <div className="font-display font-bold text-base leading-none tracking-tight">
-              Imirire Admin
+              {portalTitle}
             </div>
             <div className="text-[10px] text-sidebar-foreground/60 mt-0.5 tracking-wide">
-              Management Portal
+              {portalSubtitle}
             </div>
           </div>
         </div>

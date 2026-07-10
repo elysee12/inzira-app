@@ -76,11 +76,10 @@ export default function ChatConversationScreen() {
             setOtherUser({ id: chwResponse.data.id, name: chwResponse.data.name });
           }
         } catch (chwError) {
-          console.error("Failed to fetch assigned CHW:", chwError);
+          // Silently fail
         }
       }
     } catch (error) {
-      console.error("Failed to fetch conversation:", error);
       // Even if conversation fetch fails, try to get assigned CHW
       if (!otherUser) {
         try {
@@ -89,7 +88,7 @@ export default function ChatConversationScreen() {
             setOtherUser({ id: chwResponse.data.id, name: chwResponse.data.name });
           }
         } catch (chwError) {
-          console.error("Failed to fetch assigned CHW:", chwError);
+          // Silently fail
         }
       }
     } finally {

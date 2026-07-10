@@ -9,19 +9,41 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyOtpRouteImport } from './routes/verify-otp'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminUsersRouteImport } from './routes/_admin.users'
+import { Route as AdminReportsRouteImport } from './routes/_admin.reports'
 import { Route as AdminParentsRouteImport } from './routes/_admin.parents'
+import { Route as AdminNursesRouteImport } from './routes/_admin.nurses'
 import { Route as AdminMessagesRouteImport } from './routes/_admin.messages'
 import { Route as AdminLessonsRouteImport } from './routes/_admin.lessons'
+import { Route as AdminFacilitiesRouteImport } from './routes/_admin.facilities'
 import { Route as AdminDashboardRouteImport } from './routes/_admin.dashboard'
 import { Route as AdminChwsRouteImport } from './routes/_admin.chws'
 import { Route as AdminCategoriesRouteImport } from './routes/_admin.categories'
 
+const VerifyOtpRoute = VerifyOtpRouteImport.update({
+  id: '/verify-otp',
+  path: '/verify-otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -33,9 +55,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminParentsRoute = AdminParentsRouteImport.update({
   id: '/parents',
   path: '/parents',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNursesRoute = AdminNursesRouteImport.update({
+  id: '/nurses',
+  path: '/nurses',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminMessagesRoute = AdminMessagesRouteImport.update({
@@ -46,6 +83,11 @@ const AdminMessagesRoute = AdminMessagesRouteImport.update({
 const AdminLessonsRoute = AdminLessonsRouteImport.update({
   id: '/lessons',
   path: '/lessons',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFacilitiesRoute = AdminFacilitiesRouteImport.update({
+  id: '/facilities',
+  path: '/facilities',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
@@ -66,83 +108,149 @@ const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/verify-otp': typeof VerifyOtpRoute
   '/categories': typeof AdminCategoriesRoute
   '/chws': typeof AdminChwsRoute
   '/dashboard': typeof AdminDashboardRoute
+  '/facilities': typeof AdminFacilitiesRoute
   '/lessons': typeof AdminLessonsRoute
   '/messages': typeof AdminMessagesRoute
+  '/nurses': typeof AdminNursesRoute
   '/parents': typeof AdminParentsRoute
+  '/reports': typeof AdminReportsRoute
+  '/users': typeof AdminUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/verify-otp': typeof VerifyOtpRoute
   '/categories': typeof AdminCategoriesRoute
   '/chws': typeof AdminChwsRoute
   '/dashboard': typeof AdminDashboardRoute
+  '/facilities': typeof AdminFacilitiesRoute
   '/lessons': typeof AdminLessonsRoute
   '/messages': typeof AdminMessagesRoute
+  '/nurses': typeof AdminNursesRoute
   '/parents': typeof AdminParentsRoute
+  '/reports': typeof AdminReportsRoute
+  '/users': typeof AdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_admin': typeof AdminRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/verify-otp': typeof VerifyOtpRoute
   '/_admin/categories': typeof AdminCategoriesRoute
   '/_admin/chws': typeof AdminChwsRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/facilities': typeof AdminFacilitiesRoute
   '/_admin/lessons': typeof AdminLessonsRoute
   '/_admin/messages': typeof AdminMessagesRoute
+  '/_admin/nurses': typeof AdminNursesRoute
   '/_admin/parents': typeof AdminParentsRoute
+  '/_admin/reports': typeof AdminReportsRoute
+  '/_admin/users': typeof AdminUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
+    | '/verify-otp'
     | '/categories'
     | '/chws'
     | '/dashboard'
+    | '/facilities'
     | '/lessons'
     | '/messages'
+    | '/nurses'
     | '/parents'
+    | '/reports'
+    | '/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
+    | '/verify-otp'
     | '/categories'
     | '/chws'
     | '/dashboard'
+    | '/facilities'
     | '/lessons'
     | '/messages'
+    | '/nurses'
     | '/parents'
+    | '/reports'
+    | '/users'
   id:
     | '__root__'
     | '/'
     | '/_admin'
+    | '/forgot-password'
     | '/login'
+    | '/reset-password'
+    | '/verify-otp'
     | '/_admin/categories'
     | '/_admin/chws'
     | '/_admin/dashboard'
+    | '/_admin/facilities'
     | '/_admin/lessons'
     | '/_admin/messages'
+    | '/_admin/nurses'
     | '/_admin/parents'
+    | '/_admin/reports'
+    | '/_admin/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  VerifyOtpRoute: typeof VerifyOtpRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-otp': {
+      id: '/verify-otp'
+      path: '/verify-otp'
+      fullPath: '/verify-otp'
+      preLoaderRoute: typeof VerifyOtpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_admin': {
@@ -159,11 +267,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_admin/users': {
+      id: '/_admin/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/reports': {
+      id: '/_admin/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/parents': {
       id: '/_admin/parents'
       path: '/parents'
       fullPath: '/parents'
       preLoaderRoute: typeof AdminParentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/nurses': {
+      id: '/_admin/nurses'
+      path: '/nurses'
+      fullPath: '/nurses'
+      preLoaderRoute: typeof AdminNursesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/messages': {
@@ -178,6 +307,13 @@ declare module '@tanstack/react-router' {
       path: '/lessons'
       fullPath: '/lessons'
       preLoaderRoute: typeof AdminLessonsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/facilities': {
+      id: '/_admin/facilities'
+      path: '/facilities'
+      fullPath: '/facilities'
+      preLoaderRoute: typeof AdminFacilitiesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/dashboard': {
@@ -208,18 +344,26 @@ interface AdminRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminChwsRoute: typeof AdminChwsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminFacilitiesRoute: typeof AdminFacilitiesRoute
   AdminLessonsRoute: typeof AdminLessonsRoute
   AdminMessagesRoute: typeof AdminMessagesRoute
+  AdminNursesRoute: typeof AdminNursesRoute
   AdminParentsRoute: typeof AdminParentsRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminChwsRoute: AdminChwsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminFacilitiesRoute: AdminFacilitiesRoute,
   AdminLessonsRoute: AdminLessonsRoute,
   AdminMessagesRoute: AdminMessagesRoute,
+  AdminNursesRoute: AdminNursesRoute,
   AdminParentsRoute: AdminParentsRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminUsersRoute: AdminUsersRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -227,7 +371,10 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  VerifyOtpRoute: VerifyOtpRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

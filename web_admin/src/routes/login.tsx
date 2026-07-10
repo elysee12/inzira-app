@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Sparkles, Mail, Lock, Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -52,7 +52,7 @@ function LoginPage() {
             <Sparkles className="size-5" />
           </div>
           <div>
-            <div className="font-display font-bold text-xl leading-none">Imirire Admin</div>
+            <div className="font-display font-bold text-xl leading-none">Imirire Web</div>
             <div className="text-xs text-white/60 mt-0.5">Management Portal</div>
           </div>
         </div>
@@ -60,17 +60,17 @@ function LoginPage() {
         {/* Feature bullets */}
         <div className="relative z-10 max-w-sm space-y-6">
           <h2 className="font-display text-4xl font-bold leading-tight tracking-tight">
-            Imirire Admin Management Portal
+            Imirire Web Management Portal
           </h2>
           <p className="text-white/75 leading-relaxed text-sm">
-            Manage nutrition lessons, age categories, community health workers and parents
+            Manage facilities, nurses & nutritionists, CHWs, nutrition lessons, and system oversight
             from one beautifully simple console.
           </p>
           <div className="space-y-3">
             {[
-              "Upload documents, audio & video lessons",
-              "Manage CHW accounts and Rwanda locations",
-              "Monitor parent registrations and messages",
+              "Manage hospitals & facilities nationwide",
+              "Oversee nurses, nutritionists & CHWs",
+              "System-wide reports and user management",
             ].map((item) => (
               <div key={item} className="flex items-center gap-2.5 text-sm text-white/80">
                 <div className="size-5 rounded-full bg-white/20 grid place-items-center shrink-0">
@@ -101,13 +101,13 @@ function LoginPage() {
             <div className="size-10 rounded-xl bg-primary grid place-items-center text-primary-foreground">
               <Sparkles className="size-5" />
             </div>
-            <span className="font-display font-bold text-xl">Imirire Admin</span>
+            <span className="font-display font-bold text-xl">Imirire Web</span>
           </div>
 
           <div className="mb-8">
             <h1 className="font-display text-3xl font-bold tracking-tight">Sign in</h1>
             <p className="text-muted-foreground mt-2 text-sm">
-              Enter your administrator credentials to continue.
+              Enter your credentials to continue.
             </p>
           </div>
 
@@ -162,10 +162,20 @@ function LoginPage() {
               </div>
             </label>
 
+            {/* Forgot Password Link */}
+            <div className="flex justify-end">
+              <Link
+                to="/forgot-password"
+                className="text-sm font-medium text-primary hover:underline transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 w-full h-11 rounded-xl text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 transition-opacity hover:opacity-95 disabled:opacity-60"
+              className="w-full h-11 rounded-xl text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 transition-opacity hover:opacity-95 disabled:opacity-60"
               style={{
                 background: "var(--gradient-primary)",
                 boxShadow: "var(--shadow-elevated)",
@@ -177,7 +187,7 @@ function LoginPage() {
           </form>
 
           <p className="mt-6 text-xs text-muted-foreground text-center leading-relaxed">
-            This portal is restricted to administrators only.
+            This portal is for administrators and nurses/nutritionists.
             <br />
             Backend must be running on{" "}
             <code className="font-mono bg-muted px-1 py-0.5 rounded text-foreground">

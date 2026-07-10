@@ -37,6 +37,7 @@ export class CHWService {
     sector: string;
     cell: string;
     village: string;
+    facilityId?: number;
   }): Promise<{ chw: CHWPublic; temporaryPassword: string }> {
     // Check if email or phone already exists
     const existingUser = await this.prisma.user.findFirst({
@@ -50,7 +51,7 @@ export class CHWService {
     }
 
     // Generate secure temporary password
-    const temporaryPassword = PasswordUtil.generateSecurePassword();
+    const temporaryPassword = PasswordUtil.generateCHWPassword();
     const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
 
     // Create CHW user
@@ -66,6 +67,7 @@ export class CHWService {
         sector: data.sector,
         cell: data.cell,
         village: data.village,
+        facilityId: data.facilityId,
       },
       select: {
         id: true,
@@ -100,9 +102,12 @@ export class CHWService {
     return { chw, temporaryPassword };
   }
 
-  async getAllCHWs(): Promise<CHWPublic[]> {
+  async getAllCHWs(facilityId?: number): Promise<CHWPublic[]> {
+    const where: any = { role: 'CHW' };
+    if (facilityId) where.facilityId = facilityId;
+
     const chws = await this.prisma.user.findMany({
-      where: { role: 'CHW' },
+      where,
       select: {
         id: true,
         email: true,
@@ -114,6 +119,7 @@ export class CHWService {
         sector: true,
         cell: true,
         village: true,
+        facilityId: true,
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },

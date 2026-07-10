@@ -1,9 +1,11 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { Menu } from "lucide-react";
+import { AdminOnlySidebar } from "@/components/admin/AdminOnlySidebar";
+import { NurseSidebar } from "@/components/admin/NurseSidebar";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
 import { MobileSidebar } from "@/components/admin/MobileSidebar";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_admin")({
   beforeLoad: () => {
@@ -16,11 +18,15 @@ export const Route = createFileRoute("/_admin")({
 
 function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useAuth();
+
+  // Select sidebar based on role
+  const Sidebar = user?.role === "ADMIN" ? AdminOnlySidebar : NurseSidebar;
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Desktop sidebar */}
-      <AdminSidebar />
+      {/* Desktop sidebar - Role-based */}
+      <Sidebar />
 
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
@@ -44,7 +50,9 @@ function AdminLayout() {
           >
             <Menu className="size-5" />
           </button>
-          <span className="font-display font-semibold text-base">Imirire Admin</span>
+          <span className="font-display font-semibold text-base">
+            {user?.role === "ADMIN" ? "Imirire Admin" : "Imirire Portal"}
+          </span>
         </div>
 
         <AdminTopbar />

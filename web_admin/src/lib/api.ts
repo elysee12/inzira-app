@@ -12,7 +12,7 @@ export const API_BASE_URL = `${BASE_URL}/api`;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type Role = "ADMIN" | "PARENT" | "CHW";
+export type Role = "ADMIN" | "PARENT" | "CHW" | "NURSE";
 export type ContentType = "text" | "audio" | "video";
 
 export interface User {
@@ -27,6 +27,8 @@ export interface User {
   cell?: string | null;
   village?: string | null;
   assignedCHWId?: number | null;
+  facilityId?: number | null;
+  facilityName?: string | null;
   createdAt: string;
   updatedAt?: string;
 }
@@ -102,6 +104,27 @@ export interface UserStats {
   total: number;
   byRole: Record<string, number>;
   byDate?: number;
+}
+
+export interface Facility {
+  id: number;
+  name: string;
+  type: string;
+  province?: string | null;
+  district?: string | null;
+  sector?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  description?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { users: number };
+}
+
+export interface Nurse extends User {
+  facilityId?: number | null;
+  facility?: Facility;
 }
 
 // ── Request helper ─────────────────────────────────────────────────────────────
@@ -186,7 +209,8 @@ export const authApi = {
 // ── Content / Lessons ──────────────────────────────────────────────────────────
 
 export const contentApi = {
-  list: (): Promise<Content[]> => apiFetch("/content"),
+  list: (facilityId?: number | null): Promise<Content[]> =>
+    apiFetch(`/content${facilityId ? `?facilityId=${facilityId}` : ""}`),
 
   get: (id: number): Promise<Content> => apiFetch(`/content/${id}`),
 
@@ -248,7 +272,8 @@ export const categoryApi = {
 // ── CHW Management ─────────────────────────────────────────────────────────────
 
 export const chwApi = {
-  list: (): Promise<CHW[]> => apiFetch("/chw"),
+  list: (facilityId?: number | null): Promise<CHW[]> =>
+    apiFetch(`/chw${facilityId ? `?facilityId=${facilityId}` : ""}`),
 
   get: (id: number): Promise<CHW> => apiFetch(`/chw/${id}`),
 
@@ -282,15 +307,17 @@ export const chwApi = {
 export const userApi = {
   listAll: (): Promise<User[]> => apiFetch("/users"),
 
-  listByRole: (role: Role): Promise<User[]> => apiFetch(`/users/by-role?role=${role}`),
+  listByRole: (role: Role, facilityId?: number | null): Promise<User[]> =>
+    apiFetch(`/users/by-role?role=${role}${facilityId ? `&facilityId=${facilityId}` : ""}`),
 
   get: (id: number): Promise<User> => apiFetch(`/users/${id}`),
 
-  stats: (params?: { role?: string; startDate?: string; endDate?: string }): Promise<UserStats> => {
+  stats: (params?: { role?: string; startDate?: string; endDate?: string; facilityId?: number | null }): Promise<UserStats> => {
     const q = new URLSearchParams();
     if (params?.role) q.set("role", params.role);
     if (params?.startDate) q.set("startDate", params.startDate);
     if (params?.endDate) q.set("endDate", params.endDate);
+    if (params?.facilityId) q.set("facilityId", String(params.facilityId));
     return apiFetch(`/users/stats${q.toString() ? "?" + q : ""}`);
   },
 
@@ -349,10 +376,10 @@ export const messageApi = {
 // ── Dashboard stats ────────────────────────────────────────────────────────────
 
 export const statsApi = {
-  overview: async (): Promise<DashboardStats> => {
+  overview: async (facilityId?: number | null): Promise<DashboardStats> => {
     const [contents, userStats, categories] = await Promise.all([
-      contentApi.list(),
-      userApi.stats(),
+      contentApi.list(facilityId),
+      userApi.stats({ facilityId }),
       categoryApi.list(),
     ]);
 
@@ -367,6 +394,91 @@ export const statsApi = {
       totalMessages: 0,
     };
   },
+};
+
+// ── Facility Management ────────────────────────────────────────────────────────
+
+export const facilityApi = {
+  list: (includeInactive = false): Promise<Facility[]> =>
+    apiFetch(`/facilities${includeInactive ? "?includeInactive=true" : ""}`),
+
+  get: (id: number): Promise<Facility> => apiFetch(`/facilities/${id}`),
+
+  stats: (): Promise<{ total: number; active: number; byType: Record<string, number> }> =>
+    apiFetch("/facilities/stats"),
+
+  create: (data: {
+    name: string;
+    type: string;
+    province?: string;
+    district?: string;
+    sector?: string;
+    phone?: string;
+    email?: string;
+    description?: string;
+  }): Promise<Facility> =>
+    apiFetch("/facilities", { method: "POST", body: JSON.stringify(data) }),
+
+  update: (
+    id: number,
+    data: {
+      name?: string;
+      type?: string;
+      province?: string;
+      district?: string;
+      sector?: string;
+      phone?: string;
+      email?: string;
+      description?: string;
+      isActive?: boolean;
+    }
+  ): Promise<Facility> =>
+    apiFetch(`/facilities/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+
+  remove: (id: number): Promise<void> =>
+    apiFetch(`/facilities/${id}`, { method: "DELETE" }),
+};
+
+// ── Nurse Management ───────────────────────────────────────────────────────────
+
+export const nurseApi = {
+  list: (): Promise<Nurse[]> => apiFetch("/nurses"),
+
+  get: (id: number): Promise<Nurse> => apiFetch(`/nurses/${id}`),
+
+  stats: (): Promise<{ total: number; byFacility: Record<string, number> }> =>
+    apiFetch("/nurses/stats"),
+
+  /** Creates nurse — auto-generates password, sends welcome email */
+  create: (data: {
+    name: string;
+    email: string;
+    phone: string;
+    facilityId: number;
+    password?: string;
+    province?: string;
+    district?: string;
+    sector?: string;
+  }): Promise<{ nurse: Nurse; temporaryPassword: string }> =>
+    apiFetch("/nurses", { method: "POST", body: JSON.stringify(data) }),
+
+  update: (
+    id: number,
+    data: {
+      name?: string;
+      email?: string;
+      phone?: string;
+      password?: string;
+      facilityId?: number;
+      province?: string;
+      district?: string;
+      sector?: string;
+    }
+  ): Promise<Nurse> =>
+    apiFetch(`/nurses/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+
+  remove: (id: number): Promise<void> =>
+    apiFetch(`/nurses/${id}`, { method: "DELETE" }),
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────

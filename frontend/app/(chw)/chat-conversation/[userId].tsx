@@ -70,7 +70,7 @@ export default function ChatConversationScreen() {
         setOtherUser({ id: other.id, name: other.name });
       }
     } catch (error) {
-      console.error("Failed to fetch conversation:", error);
+      // Silently fail
     } finally {
       setLoading(false);
     }

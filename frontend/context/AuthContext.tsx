@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import apiClient from "./apiClient";
 
-export type UserRole = "admin" | "parent" | "chw";
+export type UserRole = "admin" | "parent" | "chw" | "nurse";
 
 export interface UserAccount {
   name: string;
@@ -24,11 +24,13 @@ interface AuthState {
   isLoaded: boolean;
   userName: string;
   userPhone: string;
+  facilityId: number | null;
+  facilityName: string | null;
 }
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
-  register: (name: string, phone: string, email: string, password: string, location?: { province: string; district: string; sector: string; cell: string; village: string }) => Promise<{ success: boolean; error?: string }>;
+  register: (name: string, phone: string, email: string, password: string, location?: { province: string; district: string; sector: string; cell: string; village: string }, facilityId?: number | null) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   findUserByEmail: (email: string) => Promise<UserAccount | null>;
   resetPassword: (email: string, otp: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
@@ -49,6 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoaded: false,
     userName: "",
     userPhone: "",
+    facilityId: null,
+    facilityName: null,
   });
 
   useEffect(() => {
@@ -62,6 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: parsed.role.toLowerCase() as UserRole, 
             userName: parsed.userName, 
             userPhone: parsed.userPhone || "", 
+            facilityId: parsed.facilityId ?? null,
+            facilityName: parsed.facilityName ?? null,
             isLoaded: true 
           });
         } else {
@@ -84,7 +90,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role, 
         userName: user.name, 
         userPhone: user.phone || "", 
-        email: user.email 
+        email: user.email,
+        facilityId: user.facilityId ?? null,
+        facilityName: user.facilityName ?? null,
       };
       
       await AsyncStorage.setItem(TOKEN_KEY, access_token);
@@ -116,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const register = useCallback(async (
-    name: string, phone: string, email: string, password: string, location?: { province: string; district: string; sector: string; cell: string; village: string }
+    name: string, phone: string, email: string, password: string, location?: { province: string; district: string; sector: string; cell: string; village: string }, facilityId?: number | null
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       const payload: any = { 
@@ -133,6 +141,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         payload.sector = location.sector;
         payload.cell = location.cell;
         payload.village = location.village;
+      }
+      
+      if (facilityId) {
+        payload.facilityId = facilityId;
       }
       
       await apiClient.post('/auth/register', payload);

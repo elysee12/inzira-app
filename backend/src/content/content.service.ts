@@ -80,16 +80,39 @@ export class ContentService implements OnModuleInit {
     }
   }
 
-  async findAll(): Promise<Content[]> {
+  async findAll(facilityId?: number): Promise<Content[]> {
+    if (facilityId) {
+      // Find all users (nurses/CHWs) in this facility, then get their content
+      const facilityUsers = await this.prisma.user.findMany({
+        where: { facilityId },
+        select: { id: true },
+      });
+      const userIds = facilityUsers.map((u) => u.id);
+      return this.prisma.content.findMany({
+        where: { postedById: { in: userIds } },
+        include: { ageCategory: true, postedBy: true },
+        orderBy: { postedAt: 'desc' },
+      });
+    }
     return this.prisma.content.findMany({
       include: { ageCategory: true, postedBy: true },
+      orderBy: { postedAt: 'desc' },
     });
   }
 
-  async findByAgeGroup(ageGroup: string): Promise<Content[]> {
+  async findByAgeGroup(ageGroup: string, facilityId?: number): Promise<Content[]> {
+    const where: any = { ageGroup };
+    if (facilityId) {
+      const facilityUsers = await this.prisma.user.findMany({
+        where: { facilityId },
+        select: { id: true },
+      });
+      where.postedById = { in: facilityUsers.map((u) => u.id) };
+    }
     return this.prisma.content.findMany({
-      where: { ageGroup },
+      where,
       include: { ageCategory: true },
+      orderBy: { postedAt: 'desc' },
     });
   }
 

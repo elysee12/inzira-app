@@ -94,7 +94,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
       const result = await mammoth.extractRawText({ arrayBuffer });
       setExtractedText(result.value);
     } catch (error) {
-      console.error('Extraction error:', error);
+      // Silently fail - extraction will show as null
       setExtractedText(null);
     } finally {
       setExtracting(false);
@@ -133,7 +133,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
         await handleOpenExternal();
       }
     } catch (error) {
-      console.error('Download/Share error:', error);
+      // Silently try external open
       await handleOpenExternal();
     } finally {
       setExtracting(false);

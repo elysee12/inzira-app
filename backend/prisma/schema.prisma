@@ -24,6 +24,8 @@ model User {
   assignedCHWId    Int?
   assignedCHW      User?     @relation("CHWParents", fields: [assignedCHWId], references: [id], onDelete: SetNull)
   assignedParents  User[]    @relation("CHWParents")
+  facilityId       Int?
+  facility         Facility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
   createdAt        DateTime  @default(now())
@@ -35,6 +37,23 @@ enum Role {
   ADMIN
   PARENT
   CHW
+  NURSE
+}
+
+model Facility {
+  id          Int      @id @default(autoincrement())
+  name        String
+  type        String   // Hospital, Health Center, Clinic, etc.
+  province    String?
+  district    String?
+  sector      String?
+  phone       String?
+  email       String?
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Message {

@@ -47,7 +47,7 @@ export default function ParentChatScreen() {
       const response = await apiClient.get(`/messages/conversations/${userId}`);
       setConversations(response.data);
     } catch (error) {
-      console.error("Failed to fetch conversations:", error);
+      // Silently fail - user will see empty state
     } finally {
       setLoading(false);
     }

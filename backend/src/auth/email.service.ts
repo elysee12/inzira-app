@@ -132,4 +132,79 @@ export class EmailService {
       throw new Error('Gohereza imēli y\'ikaze ntibyashobotse.');
     }
   }
+
+  async sendNurseWelcomeEmail(
+    to: string, 
+    name: string, 
+    email: string, 
+    phone: string, 
+    temporaryPassword: string, 
+    facilityName: string
+  ) {
+    const loginUrl = 'https://imirere-app.onrender.com/login';
+    
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h2 style="color: #2980B9; margin: 0;">Imirire Web Management Portal</h2>
+          <p style="color: #64748b; margin-top: 5px;">Child Nutrition Platform</p>
+        </div>
+        
+        <h3 style="color: #2c3e50;">Welcome, ${name}!</h3>
+        <p>We are pleased to inform you that you have been registered as a <strong>Nurse/Nutritionist</strong> on the Imirire platform.</p>
+        
+        <div style="background-color: #e3f2fd; padding: 20px; border-left: 4px solid #2980B9; margin: 25px 0; border-radius: 5px;">
+          <h4 style="margin-top: 0; color: #2980B9;">Your Login Credentials</h4>
+          <p style="margin: 8px 0;"><strong>Email:</strong> ${email}</p>
+          <p style="margin: 8px 0;"><strong>Phone:</strong> ${phone}</p>
+          <p style="margin: 8px 0;"><strong>Temporary Password:</strong></p>
+          <div style="font-family: 'Courier New', monospace; background: #ffffff; padding: 12px 15px; border-radius: 5px; font-size: 18px; font-weight: bold; color: #2980B9; text-align: center; border: 2px dashed #2980B9;">
+            ${temporaryPassword}
+          </div>
+          <p style="margin: 8px 0; margin-top: 15px;"><strong>Assigned Facility:</strong> ${facilityName}</p>
+        </div>
+
+        <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0; border-radius: 5px;">
+          <p style="margin: 0;"><strong>⚠️ Important Security Notice:</strong></p>
+          <p style="margin: 5px 0 0 0;">Please change this temporary password immediately after your first login for security purposes.</p>
+        </div>
+
+        <h4 style="color: #2c3e50; margin-top: 30px;">Your Responsibilities:</h4>
+        <ul style="line-height: 1.8; color: #475569;">
+          <li>Manage and create nutrition lessons and educational content</li>
+          <li>Register and manage Community Health Workers (CHWs)</li>
+          <li>Monitor parent registrations and engagement</li>
+          <li>Oversee nutritional education delivery in your facility</li>
+          <li>Respond to inquiries from CHWs and parents</li>
+        </ul>
+
+        <div style="text-align: center; margin: 35px 0;">
+          <a href="${loginUrl}" style="display: inline-block; background: linear-gradient(135deg, #2980B9 0%, #3498DB 100%); color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(41, 128, 185, 0.3);">
+            Login to Dashboard
+          </a>
+          <p style="margin-top: 15px; color: #64748b; font-size: 14px;">Or copy this link: ${loginUrl}</p>
+        </div>
+
+        <div style="background-color: #f8fafc; padding: 15px; border-radius: 5px; margin: 25px 0;">
+          <p style="margin: 0; font-size: 14px; color: #64748b;">
+            <strong>Need Help?</strong> If you have any questions or need assistance, please contact us at:
+          </p>
+          <p style="margin: 5px 0 0 0; color: #2980B9; font-weight: 600;">${this.mailFrom}</p>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+        <div style="text-align: center;">
+          <p style="font-size: 12px; color: #94a3b8; margin: 5px 0;">Imirire App &copy; 2026 - Child Nutrition Platform</p>
+          <p style="font-size: 12px; color: #94a3b8; margin: 5px 0;">Powered by Rwanda Health System</p>
+        </div>
+      </div>
+    `;
+
+    try {
+      await this.sendBrevoEmail(to, 'Welcome to Imirire - Your Login Credentials', htmlContent);
+    } catch (error) {
+      console.error('Error sending Nurse welcome email:', error);
+      throw new Error('Failed to send welcome email.');
+    }
+  }
 }

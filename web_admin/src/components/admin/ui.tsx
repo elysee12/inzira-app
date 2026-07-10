@@ -1,10 +1,19 @@
-import type { ReactNode } from "react";
+import type { ReactNode, InputHTMLAttributes, LabelHTMLAttributes } from "react";
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function Card({
+  children,
+  className = "",
+  onClick,
+}: {
+  children: ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) {
   return (
     <div
       className={`rounded-xl border bg-card ${className}`}
       style={{ boxShadow: "var(--shadow-card)" }}
+      onClick={onClick}
     >
       {children}
     </div>
@@ -109,6 +118,33 @@ export function Badge({
     >
       {children}
     </span>
+  );
+}
+
+export function Input({
+  className = "",
+  ...rest
+}: InputHTMLAttributes<HTMLInputElement> & { className?: string }) {
+  return (
+    <input
+      {...rest}
+      className={`mt-1 w-full h-9 px-3 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors disabled:opacity-50 ${className}`}
+    />
+  );
+}
+
+export function Label({
+  children,
+  className = "",
+  ...rest
+}: LabelHTMLAttributes<HTMLLabelElement> & { className?: string }) {
+  return (
+    <label
+      {...rest}
+      className={`block text-sm font-medium text-foreground mb-0.5 ${className}`}
+    >
+      {children}
+    </label>
   );
 }
 

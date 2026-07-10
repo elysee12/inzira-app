@@ -24,7 +24,23 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id, role: user.role };
+    const payload = { 
+      email: user.email, 
+      sub: user.id, 
+      role: user.role,
+      facilityId: user.facilityId 
+    };
+
+    // Fetch facility name if user has a facilityId
+    let facilityName: string | null = null;
+    if (user.facilityId) {
+      const facility = await this.prisma.facility.findUnique({
+        where: { id: user.facilityId },
+        select: { name: true },
+      });
+      facilityName = facility?.name ?? null;
+    }
+
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -33,6 +49,8 @@ export class AuthService {
         phone: user.phone,
         name: user.name,
         role: user.role,
+        facilityId: user.facilityId,
+        facilityName,
       },
     };
   }

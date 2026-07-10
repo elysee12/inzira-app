@@ -12,6 +12,8 @@ import { UserModule } from './user/user.module';
 import { CHWModule } from './chw/chw.module';
 import { MessageModule } from './message/message.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { FacilityModule } from './facility/facility.module';
+import { NurseModule } from './nurse/nurse.module';
 
 @Module({
   imports: [
@@ -70,6 +72,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     UserModule,
     CHWModule,
     MessageModule,
+    FacilityModule,
+    NurseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { chwApi, type CHW } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import { Card, Button, Badge } from "@/components/admin/ui";
 import { Modal, ConfirmDialog, FormField, inputClass } from "@/components/admin/Modal";
 import { LocationPicker, type LocationValue } from "@/components/admin/LocationPicker";
@@ -17,7 +18,15 @@ export const Route = createFileRoute("/_admin/chws")({ component: CHWsPage });
 
 function CHWsPage() {
   const qc = useQueryClient();
-  const chws = useQuery({ queryKey: ["chws"], queryFn: chwApi.list });
+  const { user } = useAuth();
+  const isNurse = user?.role === "NURSE";
+  const facilityId = isNurse ? user?.facilityId : null;
+
+  // Scoped query key so nurse sees only their facility's CHWs
+  const chws = useQuery({
+    queryKey: ["chws", facilityId ?? "all"],
+    queryFn: () => chwApi.list(facilityId),
+  });
 
   const [modal, setModal] = useState<{ open: boolean; editing?: CHW }>({ open: false });
   const [toDelete, setToDelete] = useState<CHW | null>(null);

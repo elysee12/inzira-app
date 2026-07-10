@@ -1,5 +1,6 @@
-import { Controller, Get, Query, Patch, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Query, Patch, Delete, Param, Body, ParseIntPipe, UseGuards, Request } from '@nestjs/common';
 import { UserService } from './user.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 type UserPublic = {
   id: number;
@@ -11,28 +12,35 @@ type UserPublic = {
 };
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('by-role')
-  async findByRole(@Query('role') role: string): Promise<UserPublic[]> {
-    return this.userService.findByRole(role);
+  async findByRole(@Query('role') role: string, @Request() req: any): Promise<UserPublic[]> {
+    // Nurses, CHWs, and Parents only see users in their own facility
+    const facilityId =
+      ['NURSE', 'CHW', 'PARENT'].includes(req.user?.role) ? (req.user?.facilityId ?? undefined) : undefined;
+    return this.userService.findByRole(role, facilityId);
   }
 
   @Get('stats')
   async getStats(
-    @Query('role') role?: string,
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
+    @Query('role') role: string | undefined,
+    @Query('startDate') startDate: string | undefined,
+    @Query('endDate') endDate: string | undefined,
+    @Request() req: any,
   ): Promise<{ total: number; byRole: Record<string, number>; byDate?: number }> {
     const parsedStartDate = startDate ? new Date(startDate) : undefined;
     const parsedEndDate = endDate ? new Date(endDate) : undefined;
-
-    return this.userService.getUserStats(role, parsedStartDate, parsedEndDate);
+    const facilityId =
+      ['NURSE', 'CHW', 'PARENT'].includes(req.user?.role) ? (req.user?.facilityId ?? undefined) : undefined;
+    return this.userService.getUserStats(role, parsedStartDate, parsedEndDate, facilityId);
   }
 
   @Get()
-  async findAll(): Promise<UserPublic[]> {
+  async findAll(@Request() req: any): Promise<UserPublic[]> {
+    // Admins see everyone; nurses can only see users in their facility via by-role
     return this.userService.findAll();
   }
 

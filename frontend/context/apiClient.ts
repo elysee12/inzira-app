@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
 // export const API_URL = `${BASE_URL}/api`;
 
 // Local testing IP (from your ipconfig)
-const LOCAL_IP = '10.220.3.24';
+const LOCAL_IP = '10.38.155.24';
 export const BASE_URL = `http://${LOCAL_IP}:3000`;
 export const API_URL = `${BASE_URL}/api`;
 

@@ -11,7 +11,7 @@ export default function IndexScreen() {
 
   useEffect(() => {
     if (!isLoaded) return;
-    if (role === "admin") {
+    if (role === "admin" || role === "nurse") {
       router.replace("/(admin)/dashboard");
     } else if (role === "parent") {
       router.replace("/(parent)/home");

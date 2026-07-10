@@ -28,9 +28,11 @@ export class UserService {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
-  async findByRole(role: string): Promise<UserPublic[]> {
+  async findByRole(role: string, facilityId?: number): Promise<UserPublic[]> {
+    const where: any = { role: role.toUpperCase() };
+    if (facilityId) where.facilityId = facilityId;
     return this.prisma.user.findMany({
-      where: { role: role.toUpperCase() as any },
+      where,
       select: {
         id: true,
         email: true,
@@ -42,6 +44,7 @@ export class UserService {
         sector: true,
         cell: true,
         village: true,
+        facilityId: true,
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -96,11 +99,11 @@ export class UserService {
     role?: string,
     startDate?: Date,
     endDate?: Date,
+    facilityId?: number,
   ): Promise<{ total: number; byRole: Record<string, number>; byDate?: number }> {
-    const whereClause: any = {};
-    if (role) {
-      whereClause.role = role.toUpperCase();
-    }
+    const facilityFilter = facilityId ? { facilityId } : {};
+    const whereClause: any = { ...facilityFilter };
+    if (role) whereClause.role = role.toUpperCase();
     if (startDate || endDate) {
       whereClause.createdAt = {};
       if (startDate) whereClause.createdAt.gte = startDate;
@@ -110,16 +113,13 @@ export class UserService {
     const total = await this.prisma.user.count({ where: whereClause });
 
     const byRole: Record<string, number> = {
-      ADMIN: await this.prisma.user.count({ where: { role: 'ADMIN' } }),
-      PARENT: await this.prisma.user.count({ where: { role: 'PARENT' } }),
-      CHW: await this.prisma.user.count({ where: { role: 'CHW' } }),
+      ADMIN:  await this.prisma.user.count({ where: { ...facilityFilter, role: 'ADMIN'  } }),
+      PARENT: await this.prisma.user.count({ where: { ...facilityFilter, role: 'PARENT' } }),
+      CHW:    await this.prisma.user.count({ where: { ...facilityFilter, role: 'CHW'    } }),
+      NURSE:  await this.prisma.user.count({ where: { ...facilityFilter, role: 'NURSE'  } }),
     };
 
-    let byDate = 0;
-    if (startDate || endDate) {
-      byDate = total;
-    }
-
+    const byDate = (startDate || endDate) ? total : 0;
     return { total, byRole, byDate };
   }
 

@@ -38,4 +38,40 @@ export class PasswordUtil {
 
     return parts.join('');
   }
+
+  /**
+   * Generate a simple memorable password for CHW
+   * Format: CHW@1234 (CHW@ followed by 4 random digits)
+   * Example: CHW@7823
+   */
+  static generateCHWPassword(): string {
+    const randomDigits = crypto.randomInt(1000, 9999); // 4 digits between 1000-9999
+    return `CHW@${randomDigits}`;
+  }
+
+  /**
+   * Generate a simple memorable password for Nurse
+   * Format: LastName@123 (Last name followed by @ and 3 random digits)
+   * Example: Uwase@456
+   * If name has no space, uses first 5 chars
+   */
+  static generateNursePassword(fullName: string): string {
+    // Get last name (or first 5 chars if no space)
+    const nameParts = fullName.trim().split(' ');
+    let baseName = '';
+    
+    if (nameParts.length > 1) {
+      // Use last name
+      baseName = nameParts[nameParts.length - 1];
+    } else {
+      // Use first 5 characters of name
+      baseName = nameParts[0].substring(0, 5);
+    }
+    
+    // Capitalize first letter
+    baseName = baseName.charAt(0).toUpperCase() + baseName.slice(1).toLowerCase();
+    
+    const randomDigits = crypto.randomInt(100, 999); // 3 digits between 100-999
+    return `${baseName}@${randomDigits}`;
+  }
 }

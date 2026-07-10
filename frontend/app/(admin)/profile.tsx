@@ -70,15 +70,18 @@ export default function AdminProfileScreen() {
   const fetchParents = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/users/by-role?role=PARENT');
+      const response = await apiClient.get('/users/by-role?role=PARENT').catch(() => ({ data: [] }));
       setParents(response.data || []);
       
       // Fetch stats
-      const statsResponse = await apiClient.get('/users/stats?role=PARENT');
+      const statsResponse = await apiClient.get('/users/stats?role=PARENT').catch(() => ({ 
+        data: { total: 0, byRole: { ADMIN: 0, PARENT: 0 }, byDate: 0 } 
+      }));
       setStats(statsResponse.data || { total: 0, byRole: { ADMIN: 0, PARENT: 0 }, byDate: 0 });
     } catch (error) {
-      // Error silently handled
+      // Silently fail and keep default values
       setParents([]);
+      setStats({ total: 0, byRole: { ADMIN: 0, PARENT: 0 }, byDate: 0 });
     } finally {
       setLoading(false);
     }

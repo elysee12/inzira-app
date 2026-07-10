@@ -40,7 +40,7 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (result.success) {
-      if (result.role === "admin") {
+      if (result.role === "admin" || result.role === "nurse") {
         router.replace("/(admin)/dashboard");
       } else if (result.role === "chw") {
         router.replace("/(chw)/home");

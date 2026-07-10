@@ -7,7 +7,7 @@ async function main() {
   console.log('Seeding database...');
 
   // 1. Create Admin User
-  const adminEmail = 'admin@imirire.rw';
+  const adminEmail = 'admin@gmail.com';
   const adminPhone = '0780000000';
   const hashedPassword = await bcrypt.hash('Admin@123', 10);
 

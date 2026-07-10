@@ -1,15 +1,17 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseInterceptors, UploadedFile, BadRequestException, NotFoundException, Res } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseInterceptors, UploadedFile, BadRequestException, NotFoundException, Res, UseGuards, Request } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import type { Response } from 'express';
 import { ContentService } from './content.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Content } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 
 @Controller('content')
+@UseGuards(JwtAuthGuard)
 export class ContentController {
   constructor(
     private readonly contentService: ContentService,
@@ -17,11 +19,17 @@ export class ContentController {
   ) {}
 
   @Get()
-  async findAll(@Query('ageGroup') ageGroup?: string): Promise<Content[]> {
+  async findAll(
+    @Query('ageGroup') ageGroup?: string,
+    @Request() req?: any,
+  ): Promise<Content[]> {
+    // Nurses, CHWs, and Parents only see content from their facility
+    const facilityId =
+      ['NURSE', 'CHW', 'PARENT'].includes(req?.user?.role) ? (req.user?.facilityId ?? undefined) : undefined;
     if (ageGroup) {
-      return this.contentService.findByAgeGroup(ageGroup);
+      return this.contentService.findByAgeGroup(ageGroup, facilityId);
     }
-    return this.contentService.findAll();
+    return this.contentService.findAll(facilityId);
   }
 
   @Get('preview')
@@ -83,6 +91,26 @@ export class ContentController {
         cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
       },
     }),
+    fileFilter: (req, file, cb) => {
+      // Define allowed file types
+      const allowedTypes = {
+        text: ['.pdf', '.doc', '.docx', '.txt'],
+        audio: ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac'],
+        video: ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'],
+      };
+
+      const fileExt = extname(file.originalname).toLowerCase();
+      
+      // Check if the type is in any of the allowed types
+      const isAllowed = 
+        [...allowedTypes.text, ...allowedTypes.audio, ...allowedTypes.video].includes(fileExt);
+
+      if (isAllowed) {
+        return cb(null, true);
+      } else {
+        return cb(new BadRequestException('Invalid file type'), false);
+      }
+    },
   }))
   async create(@Body() data: any, @UploadedFile() file?: Express.Multer.File): Promise<Content> {
     const { title, description, type, duration, ageGroup, postedById } = data;
@@ -132,6 +160,26 @@ export class ContentController {
         cb(null, `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`);
       },
     }),
+    fileFilter: (req, file, cb) => {
+      // Define allowed file types
+      const allowedTypes = {
+        text: ['.pdf', '.doc', '.docx', '.txt'],
+        audio: ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac'],
+        video: ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'],
+      };
+
+      const fileExt = extname(file.originalname).toLowerCase();
+      
+      // Check if the type is in any of the allowed types
+      const isAllowed = 
+        [...allowedTypes.text, ...allowedTypes.audio, ...allowedTypes.video].includes(fileExt);
+
+      if (isAllowed) {
+        return cb(null, true);
+      } else {
+        return cb(new BadRequestException('Invalid file type'), false);
+      }
+    },
   }))
   async update(
     @Param('id') id: string,

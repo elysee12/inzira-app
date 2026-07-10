@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
 import LocationPicker from "@/components/LocationPicker";
+import FacilityPicker from "@/components/FacilityPicker";
 
 export default function RegisterScreen() {
   const colors = useColors();
@@ -35,6 +36,8 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [facilityId, setFacilityId] = useState<number | null>(null);
+  const [facilityName, setFacilityName] = useState("");
   const [location, setLocation] = useState({
     province: "",
     district: "",
@@ -49,11 +52,12 @@ export default function RegisterScreen() {
     if (!phone.trim() || phone.trim().length < 10) { Alert.alert("Ikitonderwa", "Injiza nimero ya telefoni yuzuye."); return; }
     if (!email.trim() || !email.includes("@")) { Alert.alert("Ikitonderwa", "Injiza imeli yuzuye kandi igenga neza."); return; }
     if (!location.village) { Alert.alert("Ikitonderwa", "Hitamo aho utuye (Intara → Umudugudu)."); return; }
+    if (!facilityId) { Alert.alert("Ikitonderwa", "Hitamo ikigo cy'ubuzima uzakurikira amasomo."); return; }
     if (password.length < 6) { Alert.alert("Ikitonderwa", "Ijambo ry'ibanga rigomba kuba rifite inyuguti nibura 6."); return; }
     if (password !== confirmPassword) { Alert.alert("Ikitonderwa", "Amagambo y'ibanga ntahura. Gerageza nanone."); return; }
 
     setLoading(true);
-    const result = await register(name.trim(), phone.trim(), email.trim(), password, location);
+    const result = await register(name.trim(), phone.trim(), email.trim(), password, location, facilityId);
     setLoading(false);
 
     if (result.success) {
@@ -182,10 +186,44 @@ export default function RegisterScreen() {
               Aho utuye <Text style={{ color: "#ef4444" }}>*</Text>
             </Text>
             <View style={[styles.locationBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <LocationPicker value={location} onChange={setLocation} />
+              <LocationPicker
+                value={location}
+                onChange={(newLoc) => {
+                  // Clear facility selection when location changes
+                  if (
+                    newLoc.district !== location.district ||
+                    newLoc.sector !== location.sector
+                  ) {
+                    setFacilityId(null);
+                    setFacilityName("");
+                  }
+                  setLocation(newLoc);
+                }}
+              />
             </View>
             <Text style={[styles.fieldHint, { color: colors.mutedForeground }]}>
               Hitamo intara, akarere, umurenge, akagari n'umudugudu aho utuye.
+            </Text>
+          </View>
+
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.label, { color: colors.foreground }]}>
+              Ikigo cy'Ubuzima <Text style={{ color: "#ef4444" }}>*</Text>
+            </Text>
+            <FacilityPicker
+              value={facilityId}
+              onChange={(id, name) => {
+                setFacilityId(id);
+                setFacilityName(name);
+              }}
+              placeholder="Hitamo ikigo uzakurikira amasomo"
+              filterDistrict={location.district}
+              filterSector={location.sector}
+            />
+            <Text style={[styles.fieldHint, { color: colors.mutedForeground }]}>
+              {location.district
+                ? `Ibigo by'ubuzima biri muri ${location.sector || location.district}`
+                : "Hitamo aho utuye mbere kugira ngo ubone ibigo biri hafi."}
             </Text>
           </View>
 

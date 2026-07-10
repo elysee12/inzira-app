@@ -22,13 +22,29 @@ import apiClient from "@/context/apiClient";
 export default function ParentHomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { userName, userId } = useAuth();
+  const { userName, userId, facilityId, facilityName: authFacilityName } = useAuth();
   const { allContent, ageCategories, getByAge, isLoaded } = useContent();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
   
   const [chw, setChw] = useState<any>(null);
   const [chwLoading, setChwLoading] = useState(true);
+  const [resolvedFacilityName, setResolvedFacilityName] = useState<string | null>(
+    authFacilityName ?? null
+  );
+
+  // Fetch facility name if not already in auth state
+  useEffect(() => {
+    if (authFacilityName) {
+      setResolvedFacilityName(authFacilityName);
+      return;
+    }
+    if (!facilityId) return;
+    apiClient
+      .get(`/facilities/${facilityId}`)
+      .then((r) => setResolvedFacilityName(r.data?.name ?? null))
+      .catch(() => {});
+  }, [facilityId, authFacilityName]);
 
   const recentContent = allContent.filter((c) => c.isNew).slice(0, 4);
   const displayCategories = ageCategories.length > 0 ? ageCategories : AGE_CATEGORIES;
@@ -75,6 +91,13 @@ export default function ParentHomeScreen() {
             <Text style={styles.headerSub}>Uburezi bw'umwana wawe</Text>
           </View>
         </View>
+
+        {resolvedFacilityName && (
+          <View style={styles.facilityBadge}>
+            <Feather name="map-pin" size={11} color="rgba(255,255,255,0.85)" />
+            <Text style={styles.facilityBadgeText}>{resolvedFacilityName}</Text>
+          </View>
+        )}
 
         <TouchableOpacity
           style={styles.searchBar}
@@ -220,6 +243,23 @@ const styles = StyleSheet.create({
   headerLeft: { flex: 1 },
   greeting: { fontSize: 22, fontFamily: "Inter_700Bold", color: "#fff" },
   headerSub: { fontSize: 13, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.75)", marginTop: 2 },
+  facilityBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(255,255,255,0.18)",
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginBottom: 14,
+  },
+  facilityBadgeText: {
+    color: "rgba(255,255,255,0.95)",
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    letterSpacing: 0.3,
+  },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
