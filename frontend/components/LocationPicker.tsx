@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useColors } from '@/hooks/useColors';
 
@@ -206,15 +206,17 @@ const styles = StyleSheet.create({
   pickerBox: {
     borderRadius: 8,
     borderWidth: 1,
-    overflow: 'hidden',
-    minHeight: 50,
+    overflow: Platform.OS === 'ios' ? 'visible' : 'hidden', // iOS needs visible overflow
+    minHeight: Platform.OS === 'ios' ? 120 : 50, // iOS needs more height for wheel picker
     justifyContent: 'center',
   },
   picker: {
-    height: 50,
+    height: Platform.OS === 'ios' ? 120 : 50, // iOS uses wheel picker which needs more space
+    width: '100%',
     fontSize: 14,
   },
   pickerItem: {
-    fontSize: 14,
+    fontSize: 16, // iOS itemStyle - larger for better readability
+    height: 120, // iOS itemStyle
   },
 });
